@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Users, Plus, Search, Edit, Trash2, Mail, Shield, CheckCircle, XCircle } from "lucide-react"
 import type { User, UserRole } from "@/lib/auth-context"
+import withRole from "@/components/withRole"
 
-export default function UserManagementPage() {
+function UserManagementPage() {
   const [users, setUsers] = useState<User[]>([])
   const [error, setError] = useState<string | null>(null)
 
@@ -378,3 +379,5 @@ export default function UserManagementPage() {
     </div>
   )
 }
+
+export default withRole("admin")(UserManagementPage)

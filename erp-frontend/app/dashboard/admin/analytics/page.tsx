@@ -18,8 +18,9 @@ import {
 } from "recharts"
 import { Card } from "@/components/ui/card"
 import { BarChart3, TrendingUp, Users, FileText, AlertCircle, Calendar } from "lucide-react"
+import withRole from "@/components/withRole"
 
-export default function AnalyticsPage() {
+function AnalyticsPage() {
   const [data, setData] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -263,3 +264,5 @@ export default function AnalyticsPage() {
     </div>
   )
 }
+
+export default withRole("admin")(AnalyticsPage)

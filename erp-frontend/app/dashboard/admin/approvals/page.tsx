@@ -5,8 +5,9 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { CheckCircle, XCircle, AlertCircle, FileText, DollarSign, Building2, Users } from "lucide-react"
 import type { ApprovalRequest } from "@/lib/types"
+import withRole from "@/components/withRole"
 
-export default function ApprovalsPage() {
+function ApprovalsPage() {
   const [approvals, setApprovals] = useState<ApprovalRequest[]>([])
   const [error, setError] = useState<string | null>(null)
 
@@ -271,3 +272,5 @@ export default function ApprovalsPage() {
     </div>
   )
 }
+
+export default withRole("admin")(ApprovalsPage)
