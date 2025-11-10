@@ -1,0 +1,145 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  email     String   @unique
+  name      String?
+  phone     String?
+  password  String
+  role      Role     @default(USER)
+  active    Boolean  @default(true)
+  projects  Project[]
+  tasks     Task[]
+  approvals Approval[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user")
+}
+
+model Project {
+  id          String        @id @default(cuid())
+  name        String
+  client      Client   @relation(fields: [clientId], references: [id])
+  clientId    String
+  location    String
+  startDate   DateTime
+  endDate     DateTime
+  status      ProjectStatus @default(PLANNING)
+  progress    Int           @default(0)
+  phases      Phase[]
+  members     User[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@map("project")
+}
+
+model Phase {
+  id          String   @id @default(cuid())
+  name        String
+  project     Project  @relation(fields: [projectId], references: [id])
+  projectId   String
+  tasks       Task[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("phase")
+}
+
+model Task {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  status      Status   @default(PENDING)
+  priority    Priority @default(MEDIUM)
+  dueDate     DateTime
+  phase       Phase    @relation(fields: [phaseId], references: [id])
+  phaseId     String
+  assignee    User?    @relation(fields: [assigneeId], references: [id])
+  assigneeId  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("task")
+}
+
+enum Role {
+  USER
+  ADMIN
+  OWNER
+  EMPLOYEE
+}
+
+enum Status {
+  PENDING
+  IN_PROGRESS
+  IN_REVIEW
+  DONE
+}
+
+enum Priority {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum ProjectStatus {
+  PLANNING
+  IN_PROGRESS
+  COMPLETED
+}
+
+model Client {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  phone     String
+  status    String   @default("ACTIVE")
+  kycStatus String   @default("PENDING")
+  projects  Project[]
+  invoices  Invoice[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("client")
+}
+
+model Invoice {
+  id          String   @id @default(cuid())
+  client      Client   @relation(fields: [clientId], references: [id])
+  clientId    String
+  amount      Float
+  date        DateTime
+  dueDate     DateTime
+  status      String   @default("PENDING")
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("invoice")
+}
+
+model Approval {
+  id          String   @id @default(cuid())
+  type        String
+  status      String   @default("PENDING")
+  requester   User     @relation(fields: [requesterId], references: [id])
+  requesterId String
+  data        Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("approval")
+}
