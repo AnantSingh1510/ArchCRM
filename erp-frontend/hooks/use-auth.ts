@@ -6,6 +6,9 @@ interface User {
   sub: string;
   role: string;
   name?: string;
+  email: string;
+  phone?: string;
+  company?: string;
 }
 
 export const useAuth = () => {

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { CheckCircle, XCircle, AlertCircle, FileText, DollarSign, Building2, Users } from "lucide-react"
+import { CheckCircle, XCircle, AlertCircle, FileText, DollarSign, Building2, Users, Plus } from "lucide-react"
 import type { ApprovalRequest } from "@/lib/types"
 import withRole from "@/components/withRole"
 
@@ -38,10 +38,12 @@ function ApprovalsPage() {
 
   const handleApprove = async (id: string) => {
     try {
+      const token = localStorage.getItem("auth_token");
       const res = await fetch(`http://localhost:3000/approval/${id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ status: "approved" }),
       });
@@ -60,10 +62,12 @@ function ApprovalsPage() {
 
   const handleReject = async (id: string) => {
     try {
+      const token = localStorage.getItem("auth_token");
       const res = await fetch(`http://localhost:3000/approval/${id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ status: "rejected" }),
       });
@@ -107,9 +111,15 @@ function ApprovalsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="space-y-1">
-        <h1 className="text-3xl font-bold">Approval Workflows</h1>
-        <p className="text-muted-foreground">Review and approve pending requests</p>
+      <div className="flex items-center justify-between">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold">Approval Workflows</h1>
+          <p className="text-muted-foreground">Review and approve pending requests</p>
+        </div>
+        <Button onClick={() => setShowCommentForm(true)} className="gap-2">
+          <Plus className="w-4 h-4" />
+          New Approval
+        </Button>
       </div>
 
       {/* Summary Cards */}
@@ -117,11 +127,19 @@ function ApprovalsPage() {
         <Card className="p-6">
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-yellow-600" />
-              Pending
+              <DollarSign className="w-4 h-4 text-primary" />
+              Value Pending
             </p>
-            <p className="text-3xl font-bold text-yellow-600">{getPendingCount()}</p>
-            <p className="text-xs">Require action</p>
+            <p className="text-3xl font-bold">
+              ₹
+              {(
+                approvals
+                  .filter((a) => a.status === "pending")
+                  .reduce((sum, a) => sum + (a.data.amount || a.data.paymentAmount || 0), 0) / 100000
+              ).toFixed(2)}
+              L
+            </p>
+            <p className="text-xs">Under review</p>
           </div>
         </Card>
         <Card className="p-6">
@@ -152,7 +170,15 @@ function ApprovalsPage() {
               <DollarSign className="w-4 h-4 text-primary" />
               Value Pending
             </p>
-            <p className="text-3xl font-bold">₹74.1L</p>
+            <p className="text-3xl font-bold">
+              ₹
+              {(
+                approvals
+                  .filter((a) => a.status === "pending")
+                  .reduce((sum, a) => sum + (a.data.amount || a.data.paymentAmount || 0), 0) / 100000
+              ).toFixed(2)}
+              L
+            </p>
             <p className="text-xs">Under review</p>
           </div>
         </Card>

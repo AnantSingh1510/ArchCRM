@@ -4,7 +4,24 @@ import { useEffect, useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Plus, MoreVertical, DollarSign, Calendar, TrendingUp, Download, X } from "lucide-react"
+import { Plus, MoreVertical, DollarSign, Calendar, TrendingUp, Download, X, CheckCircle } from "lucide-react"
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+
+interface Client {
+  id: string;
+  name: string;
+}
 
 interface Invoice {
   id: string
@@ -18,6 +35,7 @@ interface Invoice {
 
 export default function BillingPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([])
+  const [clients, setClients] = useState<Client[]>([])
   const [error, setError] = useState<string | null>(null)
 
   const [showForm, setShowForm] = useState(false)
@@ -29,9 +47,15 @@ export default function BillingPage() {
   const [selectedInvoice, setSelectedInvoice] = useState<string | null>(null)
 
   useEffect(() => {
+    const token = localStorage.getItem("auth_token");
+
     const fetchInvoices = async () => {
       try {
-        const res = await fetch("http://localhost:3000/invoice")
+        const res = await fetch("http://localhost:3000/invoice", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         if (res.ok) {
           const data = await res.json()
           setInvoices(data)
@@ -43,16 +67,37 @@ export default function BillingPage() {
       }
     }
 
+    const fetchClients = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/client", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (res.ok) {
+          const data = await res.json()
+          setClients(data)
+        } else {
+          setError("Failed to fetch clients")
+        }
+      } catch (error) {
+        setError("An unexpected error occurred. Please try again.")
+      }
+    }
+
     fetchInvoices()
+    fetchClients()
   }, [])
 
   const handleAddInvoice = async () => {
     if (newInvoice.client && newInvoice.amount) {
       try {
+        const token = localStorage.getItem("auth_token");
         const res = await fetch("http://localhost:3000/invoice", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             ...newInvoice,
@@ -77,10 +122,12 @@ export default function BillingPage() {
 
   const markAsPaid = async (id: string) => {
     try {
+      const token = localStorage.getItem("auth_token");
       const res = await fetch(`http://localhost:3000/invoice/${id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ status: "PAID" }),
       });
@@ -100,8 +147,12 @@ export default function BillingPage() {
 
   const deleteInvoice = async (id: string) => {
     try {
+      const token = localStorage.getItem("auth_token");
       const res = await fetch(`http://localhost:3000/invoice/${id}`, {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
       if (res.ok) {
         setInvoices(invoices.filter((inv) => inv.id !== id));
@@ -154,11 +205,38 @@ export default function BillingPage() {
             </button>
           </div>
           <div className="space-y-4">
-            <Input
-              placeholder="Client Name"
-              value={newInvoice.client}
-              onChange={(e) => setNewInvoice({ ...newInvoice, client: e.target.value })}
-            />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  className="w-full justify-between"
+                >
+                  {newInvoice.client
+                    ? clients.find((client) => client.id === newInvoice.client)?.name
+                    : "Select client..."}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0">
+                <Command>
+                  <CommandInput placeholder="Search client..." />
+                  <CommandEmpty>No client found.</CommandEmpty>
+                  <CommandGroup>
+                    {clients.map((client) => (
+                      <CommandItem
+                        key={client.id}
+                        value={client.name}
+                        onSelect={() => {
+                          setNewInvoice({ ...newInvoice, client: client.id });
+                        }}
+                      >
+                        {client.name}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </Command>
+              </PopoverContent>
+            </Popover>
             <Input
               type="number"
               placeholder="Amount (USD)"
@@ -278,6 +356,33 @@ export default function BillingPage() {
                         Mark as Paid
                       </Button>
                     )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        try {
+                          const token = localStorage.getItem("auth_token");
+                          await fetch("http://localhost:3000/approval", {
+                            method: "POST",
+                            headers: {
+                              "Content-Type": "application/json",
+                              Authorization: `Bearer ${token}`,
+                            },
+                            body: JSON.stringify({
+                              type: "invoice",
+                              data: invoice,
+                            }),
+                          });
+                        } catch (error) {
+                          setError("Failed to raise for approval");
+                        }
+                      }}
+                      className="flex-1 gap-2"
+                    >
+                      <CheckCircle className="w-4 h-4" />
+                      Raise for Approval
+                    </Button>
                     <Button variant="outline" size="sm" className="flex-1 gap-2 bg-transparent">
                       <Download className="w-4 h-4" />
                       Download

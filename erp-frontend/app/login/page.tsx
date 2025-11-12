@@ -37,7 +37,12 @@ export default function LoginPage() {
       if (res.ok) {
         const data = await res.json()
         localStorage.setItem("auth_token", data.access_token)
-        router.push("/dashboard")
+        const payload = JSON.parse(atob(data.access_token.split('.')[1]))
+        if (payload.role === 'USER') {
+          router.push("/dashboard/user-client")
+        } else {
+          router.push("/dashboard")
+        }
       } else {
         const errorData = await res.json()
         setError(errorData.message || "Invalid email or password")

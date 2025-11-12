@@ -1,7 +1,8 @@
 "use client"
 
-import React, { useState, use } from "react"
+import React, { useEffect, useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import {
@@ -15,6 +16,7 @@ import {
   Trash2,
   Plus,
   Calendar,
+  Edit,
   CheckCircle2,
   AlertCircle,
   Clock,
@@ -22,6 +24,7 @@ import {
   DollarSign,
   Users,
   Briefcase,
+  Home,
 } from "lucide-react"
 
 interface Document {
@@ -40,11 +43,11 @@ interface ClientDetail {
   name: string
   email: string
   phone: string
-  altPhone: string
+  alternatePhone: string
   address: string
   city: string
   state: string
-  zipCode: string
+  pinCode: string
   gstNumber: string
   panNumber: string
   aadhaarNumber: string
@@ -53,86 +56,59 @@ interface ClientDetail {
   joinedDate: string
   status: "active" | "inactive" | "suspended"
   kycStatus: "approved" | "pending" | "incomplete" | "rejected"
-  totalProjects: number
-  totalInvoices: number
-  totalPaid: string
-  totalPending: string
   documents: Document[]
+  properties: Property[]
 }
 
-export default function ClientDetailsPage({ params }: { params: { id: string } }) {
-  const { id } = use(params);
-  const [client] = useState<ClientDetail>({
-    id: id,
-    name: "Urban Developers Inc",
-    email: "contact@urbandevelopers.com",
-    phone: "+91 98765 43210",
-    altPhone: "+91 98765 43211",
-    address: "456 Business Park, Tech Avenue",
-    city: "Bangalore",
-    state: "Karnataka",
-    zipCode: "560001",
-    gstNumber: "29AABCU9603R1Z0",
-    panNumber: "AABCU9603R",
-    aadhaarNumber: "****-****-5678",
-    bankAccountNumber: "12345678901234",
-    ifscCode: "HDFC0001234",
-    joinedDate: "2023-03-15",
-    status: "active",
-    kycStatus: "approved",
-    totalProjects: 2,
-    totalInvoices: 12,
-    totalPaid: "₹45,00,000",
-    totalPending: "₹8,50,000",
-    documents: [
-      {
-        id: "1",
-        name: "Aadhaar Card",
-        type: "aadhaar",
-        status: "verified",
-        uploadedDate: "2023-03-15",
-        uploadedBy: "Admin",
-        size: "2.4 MB",
-      },
-      {
-        id: "2",
-        name: "PAN Card",
-        type: "pan",
-        status: "verified",
-        uploadedDate: "2023-03-15",
-        uploadedBy: "Admin",
-        size: "1.8 MB",
-      },
-      {
-        id: "3",
-        name: "GST Certificate",
-        type: "gst",
-        status: "verified",
-        uploadedDate: "2023-04-10",
-        uploadedBy: "Client",
-        expiryDate: "2025-12-31",
-        size: "3.2 MB",
-      },
-      {
-        id: "4",
-        name: "Bank Details Proof",
-        type: "bank",
-        status: "pending",
-        uploadedDate: "2024-01-20",
-        uploadedBy: "Client",
-        size: "2.1 MB",
-      },
-      {
-        id: "5",
-        name: "KYC Form",
-        type: "kyc",
-        status: "verified",
-        uploadedDate: "2023-03-16",
-        uploadedBy: "Admin",
-        size: "1.5 MB",
-      },
-    ],
-  })
+interface Property {
+  id: string
+  plotNumber: string
+  dimensions: string
+  project: {
+    name: string
+  }
+}
+
+export default function ClientDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+  const [id, setId] = useState<string | null>(null);
+  const [client, setClient] = useState<ClientDetail | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  // Unwrap params first
+  useEffect(() => {
+    params.then(p => setId(p.id));
+  }, [params]);
+
+  useEffect(() => {
+    if (!id) {
+      return;
+    }
+
+    const fetchClient = async () => {
+      try {
+        const token = localStorage.getItem("auth_token");
+        const res = await fetch(`http://localhost:3000/client/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setClient(data);
+        } else {
+          setError("Failed to fetch client");
+        }
+      } catch (error) {
+        setError("An unexpected error occurred. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchClient();
+  }, [id]);
 
   const getStatusBadge = (status: string) => {
     const badges: Record<string, { bg: string; text: string; icon: React.ReactNode }> = {
@@ -147,6 +123,37 @@ export default function ClientDetailsPage({ params }: { params: { id: string } }
       incomplete: { bg: "bg-gray-100", text: "text-gray-800", icon: <Clock className="w-4 h-4" /> },
     }
     return badges[status] || { bg: "bg-gray-100", text: "text-gray-800", icon: null }
+  }
+
+  const handleDelete = async () => {
+    try {
+      const token = localStorage.getItem("auth_token");
+      const res = await fetch(`http://localhost:3000/client/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.ok) {
+        router.push("/dashboard/clients");
+      } else {
+        setError("Failed to delete client");
+      }
+    } catch (error) {
+      setError("An unexpected error occurred. Please try again.");
+    }
+  };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <p className="text-destructive">{error}</p>;
+  }
+
+  if (!client) {
+    return <div>Client not found</div>;
   }
 
   return (
@@ -171,6 +178,16 @@ export default function ClientDetailsPage({ params }: { params: { id: string } }
             {getStatusBadge(client.status).icon}
             {client.status.charAt(0).toUpperCase() + client.status.slice(1)}
           </span>
+          <Link href={`/dashboard/clients/${id}/edit`}>
+            <Button variant="outline" className="gap-2">
+              <Edit className="w-4 h-4" />
+              Edit
+            </Button>
+          </Link>
+          <Button variant="destructive" className="gap-2" onClick={handleDelete}>
+            <Trash2 className="w-4 h-4" />
+            Delete
+          </Button>
         </div>
       </div>
 
@@ -187,46 +204,6 @@ export default function ClientDetailsPage({ params }: { params: { id: string } }
           </div>
         </Card>
       )}
-
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="p-4 bg-gradient-to-br from-blue-50 to-blue-100">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm text-slate-600 font-medium">Total Projects</p>
-              <p className="text-2xl font-bold text-slate-900 mt-1">{client.totalProjects}</p>
-            </div>
-            <Briefcase className="w-8 h-8 text-blue-600 opacity-20" />
-          </div>
-        </Card>
-        <Card className="p-4 bg-gradient-to-br from-green-50 to-green-100">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm text-slate-600 font-medium">Total Paid</p>
-              <p className="text-2xl font-bold text-slate-900 mt-1">{client.totalPaid}</p>
-            </div>
-            <DollarSign className="w-8 h-8 text-green-600 opacity-20" />
-          </div>
-        </Card>
-        <Card className="p-4 bg-gradient-to-br from-orange-50 to-orange-100">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm text-slate-600 font-medium">Pending</p>
-              <p className="text-2xl font-bold text-slate-900 mt-1">{client.totalPending}</p>
-            </div>
-            <Clock className="w-8 h-8 text-orange-600 opacity-20" />
-          </div>
-        </Card>
-        <Card className="p-4 bg-gradient-to-br from-purple-50 to-purple-100">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm text-slate-600 font-medium">Documents</p>
-              <p className="text-2xl font-bold text-slate-900 mt-1">{client.documents.length}</p>
-            </div>
-            <FileText className="w-8 h-8 text-purple-600 opacity-20" />
-          </div>
-        </Card>
-      </div>
 
       {/* Contact Information */}
       <Card className="p-6">
@@ -255,7 +232,7 @@ export default function ClientDetailsPage({ params }: { params: { id: string } }
             <label className="text-sm font-semibold text-slate-600">Alternate Phone</label>
             <div className="flex items-center gap-2 mt-2">
               <Phone className="w-4 h-4 text-slate-400" />
-              <p className="text-slate-900">{client.altPhone}</p>
+              <p className="text-slate-900">{client.alternatePhone}</p>
             </div>
           </div>
           <div>
@@ -289,7 +266,7 @@ export default function ClientDetailsPage({ params }: { params: { id: string } }
           </div>
           <div>
             <label className="text-sm font-semibold text-slate-600">PIN Code</label>
-            <p className="text-slate-900 mt-2">{client.zipCode}</p>
+            <p className="text-slate-900 mt-2">{client.pinCode}</p>
           </div>
         </div>
       </Card>
@@ -331,7 +308,7 @@ export default function ClientDetailsPage({ params }: { params: { id: string } }
             <FileText className="w-5 h-5 text-blue-600" />
             Documents & Compliance
           </h2>
-          <Link href={`/dashboard/clients/${params.id}/documents`}>
+          <Link href={`/dashboard/clients/${id}/documents`}>
             <Button className="gap-2">
               <Plus className="w-4 h-4" />
               Manage Documents
@@ -391,6 +368,55 @@ export default function ClientDetailsPage({ params }: { params: { id: string } }
             <FileText className="w-12 h-12 text-slate-300 mx-auto mb-3" />
             <p className="text-slate-500 font-medium">No documents uploaded yet</p>
             <p className="text-sm text-slate-400 mt-1">Start by uploading KYC documents</p>
+          </div>
+        )}
+      </Card>
+
+      {/* Properties Section */}
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            <Home className="w-5 h-5 text-blue-600" />
+            Properties
+          </h2>
+          <Link href={`/dashboard/clients/${id}/properties/new`}>
+            <Button className="gap-2">
+              <Plus className="w-4 h-4" />
+              Add Property
+            </Button>
+          </Link>
+        </div>
+
+        <div className="space-y-3">
+          {client.properties.map((prop) => (
+            <div
+              key={prop.id}
+              className="flex items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors border border-slate-200"
+            >
+              <div className="flex items-start gap-3 flex-1">
+                <Home className="w-5 h-5 text-slate-400 mt-1 flex-shrink-0" />
+                <div className="flex-1">
+                  <h3 className="font-semibold text-slate-900">Plot No. {prop.plotNumber}</h3>
+                  <p className="text-sm text-slate-500">{prop.dimensions}</p>
+                  <p className="text-xs text-slate-500 mt-2">{prop.project.name}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button className="p-2 hover:bg-slate-200 rounded-lg transition-colors">
+                  <Eye className="w-4 h-4 text-slate-600" />
+                </button>
+                <button className="p-2 hover:bg-red-50 rounded-lg transition-colors">
+                  <Trash2 className="w-4 h-4 text-red-600" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {client.properties.length === 0 && (
+          <div className="text-center py-8">
+            <Home className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+            <p className="text-slate-500 font-medium">No properties assigned yet</p>
           </div>
         )}
       </Card>

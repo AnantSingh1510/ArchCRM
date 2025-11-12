@@ -14,6 +14,8 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Calendar,
+  CheckCircle,
+  DollarSign,
 } from "lucide-react"
 import withAuth from "@/components/withAuth"
 
@@ -26,18 +28,60 @@ function DashboardPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [projectsRes, tasksRes] = await Promise.all([
+        const [projectsRes, tasksRes, clientsRes, invoicesRes, approvalsRes] = await Promise.all([
           fetch("http://localhost:3000/project"),
           fetch("http://localhost:3000/task"),
+          fetch("http://localhost:3000/client"),
+          fetch("http://localhost:3000/invoice"),
+          fetch("http://localhost:3000/approval"),
         ]);
 
         const projects = await projectsRes.json();
         const tasks = await tasksRes.json();
+        const clients = await clientsRes.json();
+        const invoices = await invoicesRes.json();
+        const approvals = await approvalsRes.json();
 
         setStats([
           {
+            icon: AlertCircle,
+            label: "Demands Raised",
+            value: approvals.length,
+            change: "+2",
+            changeType: "up",
+            color: "from-blue-500 to-blue-600",
+            bgColor: "bg-blue-50",
+          },
+          {
+            icon: CheckCircle,
+            label: "Demands Approved",
+            value: approvals.filter((a: any) => a.status === "approved").length,
+            change: "+4",
+            changeType: "up",
+            color: "from-green-500 to-green-600",
+            bgColor: "bg-green-50",
+          },
+          {
+            icon: DollarSign,
+            label: "Dues Cleared",
+            value: invoices.filter((i: any) => i.status === "PAID").length,
+            change: "-3",
+            changeType: "down",
+            color: "from-orange-500 to-orange-600",
+            bgColor: "bg-orange-50",
+          },
+          {
+            icon: Clock,
+            label: "Dues Pending",
+            value: invoices.filter((i: any) => i.status !== "PAID").length,
+            change: "+12%",
+            changeType: "up",
+            color: "from-purple-500 to-purple-600",
+            bgColor: "bg-purple-50",
+          },
+          {
             icon: Building2,
-            label: "Active Projects",
+            label: "Projects",
             value: projects.length,
             change: "+2",
             changeType: "up",
@@ -46,30 +90,12 @@ function DashboardPage() {
           },
           {
             icon: Users,
-            label: "Total Clients",
-            value: "28", // Mock data
+            label: "Clients",
+            value: clients.length,
             change: "+4",
             changeType: "up",
             color: "from-green-500 to-green-600",
             bgColor: "bg-green-50",
-          },
-          {
-            icon: FileText,
-            label: "Pending Tasks",
-            value: tasks.filter((t: any) => t.status === "PENDING").length,
-            change: "-3",
-            changeType: "down",
-            color: "from-orange-500 to-orange-600",
-            bgColor: "bg-orange-50",
-          },
-          {
-            icon: BarChart3,
-            label: "Revenue (Current Month)",
-            value: "₹145.2L", // Mock data
-            change: "+12%",
-            changeType: "up",
-            color: "from-purple-500 to-purple-600",
-            bgColor: "bg-purple-50",
           },
         ]);
 

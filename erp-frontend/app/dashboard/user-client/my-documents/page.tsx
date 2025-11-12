@@ -1,20 +1,24 @@
 "use client"
 
 import type React from "react"
-
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Upload, Download, Eye, CheckCircle, Clock, AlertCircle } from "lucide-react"
+import Link from "next/link"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 
 interface MyDoc {
   id: string
+  name: string
   documentType: string
   fileName: string
-  uploadedAt: string
+  uploadedAt: string;
+  uploadedDate: string;
   status: "approved" | "pending" | "rejected"
-  uploadedBy: string
+  uploadedBy: string;
+  url: string;
 }
 
 const documentTypes = [
@@ -27,49 +31,77 @@ const documentTypes = [
 ]
 
 export default function MyDocumentsPage() {
-  const [myDocuments, setMyDocuments] = useState<MyDoc[]>([
-    {
-      id: "doc-1",
-      documentType: "aadhaar",
-      fileName: "My_Aadhaar.pdf",
-      uploadedAt: "2024-11-18",
-      status: "approved",
-      uploadedBy: "Me",
-    },
-    {
-      id: "doc-2",
-      documentType: "pan",
-      fileName: "My_PAN.pdf",
-      uploadedAt: "2024-11-15",
-      status: "approved",
-      uploadedBy: "Me",
-    },
-    {
-      id: "doc-3",
-      documentType: "kyc_form",
-      fileName: "KYC_Form_2024.pdf",
-      uploadedAt: "2024-11-20",
-      status: "pending",
-      uploadedBy: "Me",
-    },
-  ])
+  const [myDocuments, setMyDocuments] = useState<MyDoc[]>([])
 
   const [uploadingType, setUploadingType] = useState<string | null>(null)
   const [newFile, setNewFile] = useState<File | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [previewDoc, setPreviewDoc] = useState<MyDoc | null>(null)
 
-  const handleUpload = () => {
-    if (!uploadingType || !newFile) return
-    const newDoc: MyDoc = {
-      id: `doc-${Date.now()}`,
-      documentType: uploadingType,
-      fileName: newFile.name,
-      uploadedAt: new Date().toISOString().split("T")[0],
-      status: "pending",
-      uploadedBy: "Me",
+  useEffect(() => {
+    const fetchDocuments = async () => {
+      try {
+        const token = localStorage.getItem("auth_token")
+        if (!token) {
+          setError("No token found. Please log in again.")
+          return
+        }
+        const payload = JSON.parse(atob(token.split('.')[1]))
+        const clientId = payload.clientId
+        if (!clientId) {
+          setError("No client ID found. Please log in again.")
+          return
+        }
+        const res = await fetch(`http://localhost:3000/document/client/${clientId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        if (res.ok) {
+          const data = await res.json()
+          setMyDocuments(data)
+        } else {
+          setError("Failed to fetch documents")
+        }
+      } catch (error) {
+        setError("An unexpected error occurred. Please try again.")
+      }
     }
-    setMyDocuments([...myDocuments, newDoc])
-    setUploadingType(null)
-    setNewFile(null)
+
+    fetchDocuments()
+  }, [])
+
+  const handleUpload = async () => {
+    if (!uploadingType || !newFile) return
+    const formData = new FormData()
+    formData.append("file", newFile)
+    formData.append("clientId", localStorage.getItem("client_id") || "")
+    formData.append("name", newFile.name)
+    formData.append("type", uploadingType)
+    formData.append("tags", "")
+
+    try {
+      const token = localStorage.getItem("auth_token")
+      const res = await fetch("http://localhost:3000/document/upload", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      })
+
+      if (res.ok) {
+        const newDoc = await res.json()
+        setMyDocuments([...myDocuments, newDoc])
+        setUploadingType(null)
+        setNewFile(null)
+      } else {
+        const errorData = await res.json()
+        setError(errorData.message || "Failed to upload document")
+      }
+    } catch (error) {
+      setError("An unexpected error occurred. Please try again.")
+    }
   }
 
   const getStatusIcon = (status: string) => {
@@ -96,9 +128,17 @@ export default function MyDocumentsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="space-y-1">
-        <h1 className="text-3xl font-bold">My Documents</h1>
-        <p className="text-muted-foreground">Upload and manage your personal and business documents</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">My Documents</h1>
+          <p className="text-muted-foreground">Upload and manage your personal and business documents</p>
+        </div>
+        <Link href="/dashboard/user-client/my-documents/new">
+          <Button className="gap-2">
+            <Upload className="w-4 h-4" />
+            Upload Document
+          </Button>
+        </Link>
       </div>
 
       {/* Submission Status */}
@@ -191,11 +231,11 @@ export default function MyDocumentsPage() {
                       <div className="flex items-center gap-3 mb-2">
                         <span className="text-2xl">📄</span>
                         <div>
-                          <h3 className="font-semibold">{docType?.label}</h3>
-                          <p className="text-sm text-muted-foreground">{doc.fileName}</p>
+                          <h3 className="font-semibold">{doc.name}</h3>
+                          <p className="text-sm text-muted-foreground">{docType?.label}</p>
                         </div>
                       </div>
-                      <p className="text-xs text-muted-foreground">Uploaded: {doc.uploadedAt}</p>
+                      <p className="text-xs text-muted-foreground">Uploaded: {new Date(doc.uploadedDate).toLocaleDateString()}</p>
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -212,12 +252,29 @@ export default function MyDocumentsPage() {
                           Reupload
                         </Button>
                       )}
-                      <button className="p-2 hover:bg-secondary rounded">
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <button className="p-2 hover:bg-secondary rounded">
-                        <Download className="w-4 h-4" />
-                      </button>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <button className="p-2 hover:bg-secondary rounded">
+                            <Eye className="w-4 h-4" />
+                          </button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-3xl">
+                          <DialogHeader>
+                            <DialogTitle>{doc.name}</DialogTitle>
+                          </DialogHeader>
+                          <div className="mt-4">
+                            <iframe
+                              src={`http://localhost:3000/document/download/${doc.url.split('\\').pop()}`}
+                              className="w-full h-[600px]"
+                            />
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                      <a href={`http://localhost:3000/document/download/${doc.url.split('\\').pop()}`} download>
+                        <button className="p-2 hover:bg-secondary rounded">
+                          <Download className="w-4 h-4" />
+                        </button>
+                      </a>
                     </div>
                   </div>
                 </Card>

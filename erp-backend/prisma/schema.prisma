@@ -22,6 +22,8 @@ model User {
   projects  Project[]
   tasks     Task[]
   approvals Approval[]
+  client    Client?  @relation(fields: [clientId], references: [id])
+  clientId  String?  @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -40,6 +42,7 @@ model Project {
   progress    Int           @default(0)
   phases      Phase[]
   members     User[]
+  properties  Property[]
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
@@ -102,18 +105,46 @@ enum ProjectStatus {
 }
 
 model Client {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  phone     String
-  status    String   @default("ACTIVE")
-  kycStatus String   @default("PENDING")
-  projects  Project[]
-  invoices  Invoice[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                  String    @id @default(cuid())
+  name                String
+  email               String    @unique
+  phone               String
+  alternatePhone      String?
+  joinedDate          DateTime?
+  address             String?
+  city                String?
+  state               String?
+  pinCode             String?
+  gstNumber           String?
+  panNumber           String?
+  aadhaarNumber       String?
+  bankAccountNumber   String?
+  ifscCode            String?
+  status              String    @default("ACTIVE")
+  kycStatus           String    @default("PENDING")
+  projects            Project[]
+  invoices            Invoice[]
+  documents           Document[]
+  user                User?
+  properties          Property[]
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
   @@map("client")
+}
+
+model Property {
+  id          String   @id @default(cuid())
+  plotNumber  String
+  dimensions  String
+  project     Project  @relation(fields: [projectId], references: [id])
+  projectId   String
+  client      Client   @relation(fields: [clientId], references: [id])
+  clientId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("property")
 }
 
 model Invoice {
@@ -142,4 +173,23 @@ model Approval {
   updatedAt   DateTime @updatedAt
 
   @@map("approval")
+}
+
+model Document {
+  id           String   @id @default(cuid())
+  name         String
+  type         String
+  status       String
+  tags         String[]
+  uploadedDate DateTime
+  uploadedBy   String
+  expiryDate   DateTime?
+  size         String
+  url          String
+  clientId     String
+  client       Client   @relation(fields: [clientId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("document")
 }

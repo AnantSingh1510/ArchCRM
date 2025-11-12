@@ -33,6 +33,16 @@ export class UserController {
     return this.userService.update(id, updateUserDto);
   }
 
+  @Patch('profile/:id')
+  updateProfile(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    return this.userService.update(id, updateUserDto);
+  }
+
+  @Patch('password/:id')
+  updatePassword(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    return this.userService.update(id, updateUserDto);
+  }
+
   @Delete(':id')
   @Roles('ADMIN')
   remove(@Param('id') id: string) {

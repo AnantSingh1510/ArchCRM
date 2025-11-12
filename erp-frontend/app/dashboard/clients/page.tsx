@@ -2,9 +2,10 @@
 
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Plus, MoreVertical, Mail, Phone, FileText } from "lucide-react"
+import { Plus, MoreVertical, Mail, Phone, FileText, Search, Building2 } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
+import { Input } from "@/components/ui/input"
 
 interface Client {
   id: string
@@ -20,6 +21,7 @@ interface Client {
 export default function ClientsPage() {
   const [clients, setClients] = useState<Client[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [searchTerm, setSearchTerm] = useState("")
 
   useEffect(() => {
     const fetchClients = async () => {
@@ -48,6 +50,12 @@ export default function ClientsPage() {
     return badges[status] || badges.incomplete
   }
 
+  const filteredClients = clients.filter(
+    (c) =>
+      c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -64,56 +72,63 @@ export default function ClientsPage() {
         </Link>
       </div>
 
+      {/* Search Bar */}
+      <Card className="p-4 border border-border">
+        <div className="flex gap-2">
+          <Search className="w-5 h-5 text-muted-foreground" />
+          <Input
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search clients by name or email..."
+            className="border-0 bg-transparent"
+          />
+        </div>
+      </Card>
+
       {/* Clients Grid */}
       {error && <p className="text-destructive">{error}</p>}
-      <div className="grid gap-6">
-        {clients.map((client) => {
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {filteredClients.map((client) => {
           const kycBadge = getKYCBadge(client.kycStatus)
           return (
-            <Card key={client.id} className="p-6 hover:border-primary/50 transition-colors hover:shadow-lg">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h3 className="text-xl font-bold">{client.name}</h3>
-                    <span className={`px-2 py-1 text-xs rounded-full font-semibold ${kycBadge.bg} ${kycBadge.text}`}>
-                      KYC {client.kycStatus}
-                    </span>
-                  </div>
-                  <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-2">
-                      <Mail className="w-4 h-4" />
-                      {client.email}
+            <Card key={client.id} className="p-4 flex flex-col justify-between">
+              <div>
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h3 className="text-xl font-bold">{client.name}</h3>
+                      <span className={`px-2 py-1 text-xs rounded-full font-semibold ${kycBadge.bg} ${kycBadge.text}`}>
+                        KYC {client.kycStatus}
+                      </span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Phone className="w-4 h-4" />
-                      {client.phone}
+                    <div className="flex flex-col gap-2 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-2">
+                        <Mail className="w-4 h-4" />
+                        {client.email}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Phone className="w-4 h-4" />
+                        {client.phone}
+                      </div>
                     </div>
                   </div>
+                  <button className="p-2 hover:bg-secondary rounded-lg">
+                    <MoreVertical className="w-5 h-5 text-muted-foreground" />
+                  </button>
                 </div>
-                <button className="p-2 hover:bg-secondary rounded-lg">
-                  <MoreVertical className="w-5 h-5 text-muted-foreground" />
-                </button>
+                <div className="flex items-center gap-4 pt-4 border-t border-border flex-wrap">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Project</p>
+                    <p className="text-lg font-bold flex items-center gap-1">
+                      <Building2 className="w-4 h-4" />
+                      {client.projects[0]?.name}
+                    </p>
+                  </div>
+                  <span className="ml-auto px-3 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700">
+                    {client.status}
+                  </span>
+                </div>
               </div>
-
-              {/* Documents and Status */}
-              <div className="flex items-center gap-4 pt-4 border-t border-border flex-wrap">
-                <div>
-                  <p className="text-xs text-muted-foreground">Active Projects</p>
-                  <p className="text-lg font-bold">{client.projects.length}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Documents</p>
-                  <p className="text-lg font-bold flex items-center gap-1">
-                    <FileText className="w-4 h-4" />
-                    {client.documents}
-                  </p>
-                </div>
-                <span className="ml-auto px-3 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700">
-                  {client.status}
-                </span>
-              </div>
-
-              {/* Action Buttons */}
               <div className="flex gap-2 mt-4">
                 <Link href={`/dashboard/clients/${client.id}`} className="flex-1">
                   <Button variant="outline" className="w-full bg-transparent">

@@ -70,6 +70,7 @@ export default function DashboardLayout({
         { icon: BarChart3, label: "Analytics", href: "/dashboard/admin/analytics", section: "analytics" },
         { icon: CreditCard, label: "Financial", href: "/dashboard/financials/invoices", section: "financial" },
         { icon: FileText, label: "Reports", href: "/dashboard/reports", section: "analytics" },
+        { icon: BarChart3, label: "Billing", href: "/dashboard/billing", section: "main" },
         { icon: Settings, label: "System Settings", href: "/dashboard/settings", section: "settings" },
       ],
       owner: [
@@ -80,6 +81,7 @@ export default function DashboardLayout({
         { icon: BarChart3, label: "Analytics", href: "/dashboard/owner/analytics", section: "analytics" },
         { icon: Building2, label: "Projects", href: "/dashboard/projects", section: "main" },
         { icon: Users, label: "Team Management", href: "/dashboard/teams", section: "team" },
+        { icon: BarChart3, label: "Billing", href: "/dashboard/billing", section: "main" },
         { icon: FileText, label: "Reports", href: "/dashboard/reports", section: "analytics" },
       ],
       employee: [
@@ -90,6 +92,7 @@ export default function DashboardLayout({
         { icon: MapPin, label: "Properties", href: "/dashboard/real-estate/properties", section: "main" },
         { icon: Users, label: "Team", href: "/dashboard/teams", section: "team" },
         { icon: MessageSquare, label: "Communication", href: "/dashboard/communication", section: "team" },
+        { icon: BarChart3, label: "Billing", href: "/dashboard/billing", section: "main" },
         { icon: FileText, label: "Documents", href: "/dashboard/documents", section: "main" },
       ],
       user: [
@@ -113,6 +116,10 @@ export default function DashboardLayout({
   }
 
   if (!mounted) return null
+
+  if (user?.role.toLowerCase() === 'user') {
+    return <>{children}</>
+  }
 
   return (
     <div className="flex h-screen bg-background">

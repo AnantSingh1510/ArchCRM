@@ -1,17 +1,19 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useAuth } from "@/hooks/use-auth"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Bell, Lock, User, Save, AlertCircle, CheckCircle, Palette } from "lucide-react"
 
 export default function SettingsPage() {
+  const { user } = useAuth()
   const [profile, setProfile] = useState({
-    name: "John Doe",
-    email: "john@operahub.com",
-    phone: "+1 (555) 123-4567",
-    company: "OperaHub Inc",
+    name: user?.name || "",
+    email: user?.email || "",
+    phone: user?.phone || "",
+    company: user?.company || "",
   })
 
   const [notifications, setNotifications] = useState({
@@ -32,26 +34,69 @@ export default function SettingsPage() {
   const [theme, setTheme] = useState("light")
   const [saved, setSaved] = useState(false)
 
-  const handleSaveProfile = () => {
-    setSaved(true)
-    setTimeout(() => setSaved(false), 3000)
+  useEffect(() => {
+    if (user) {
+      setProfile({
+        name: user.name || "",
+        email: user.email,
+        phone: user.phone || "",
+        company: user.company || "",
+      })
+    }
+  }, [user])
+
+  const handleSaveProfile = async () => {
+    try {
+      const token = localStorage.getItem("auth_token");
+      const res = await fetch(`http://localhost:3000/user/profile/${user.sub}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(profile),
+      });
+      if (res.ok) {
+        setSaved(true)
+        setTimeout(() => setSaved(false), 3000)
+      }
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   const toggleNotification = (key: keyof typeof notifications) => {
     setNotifications({ ...notifications, [key]: !notifications[key] })
   }
 
-  const handlePasswordChange = () => {
+  const handlePasswordChange = async () => {
     if (security.newPassword === security.confirmPassword) {
-      setSaved(true)
-      setSecurity({
-        ...security,
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-        showPasswordForm: false,
-      })
-      setTimeout(() => setSaved(false), 3000)
+      try {
+        const token = localStorage.getItem("auth_token");
+        const res = await fetch(`http://localhost:3000/user/password/${user.sub}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            password: security.newPassword,
+          }),
+        });
+        if (res.ok) {
+          setSaved(true)
+          setSecurity({
+            ...security,
+            currentPassword: "",
+            newPassword: "",
+            confirmPassword: "",
+            showPasswordForm: false,
+          })
+          setTimeout(() => setSaved(false), 3000)
+        }
+      } catch (error) {
+        console.error(error)
+      }
     }
   }
 

@@ -11,9 +11,11 @@ import { ClientModule } from './client/client.module';
 import { InvoiceModule } from './invoice/invoice.module';
 import { ApprovalModule } from './approval/approval.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { DocumentModule } from './document/document.module';
+import { PropertyModule } from './property/property.module';
 
 @Module({
-  imports: [UserModule, ProjectModule, PhaseModule, TaskModule, PrismaModule, AuthModule, ClientModule, InvoiceModule, ApprovalModule, AnalyticsModule],
+  imports: [UserModule, ProjectModule, PhaseModule, TaskModule, PrismaModule, AuthModule, ClientModule, InvoiceModule, ApprovalModule, AnalyticsModule, DocumentModule, PropertyModule],
   controllers: [AppController],
   providers: [AppService],
 })

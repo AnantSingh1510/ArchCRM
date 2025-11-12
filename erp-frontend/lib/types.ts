@@ -79,13 +79,13 @@ export interface Document {
   id: string
   name: string
   type: string
-  url: string
-  projectId: string
+  status: string
+  uploadedDate: Date
   uploadedBy: string
-  uploadedAt: Date
-  version: number
-  tags: string[]
-  accessControl: string[] // User IDs with access
+  expiryDate?: Date
+  size: string
+  clientId: string
+  url: string
 }
 
 export interface Property {

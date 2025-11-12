@@ -2,9 +2,16 @@
 
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Plus, MoreVertical, MapPin, Calendar } from "lucide-react"
+import { Plus, MoreVertical, MapPin, Calendar, Search } from "lucide-react"
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import { Input } from "@/components/ui/input"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 interface Project {
   id: string
@@ -20,6 +27,7 @@ interface Project {
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [searchTerm, setSearchTerm] = useState("")
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -39,6 +47,12 @@ export default function ProjectsPage() {
     fetchProjects()
   }, [])
 
+  const filteredProjects = projects.filter(
+    (p) =>
+      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.location.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -54,9 +68,22 @@ export default function ProjectsPage() {
         </Link>
       </div>
 
+      {/* Search Bar */}
+      <Card className="p-4 border border-border">
+        <div className="flex gap-2">
+          <Search className="w-5 h-5 text-muted-foreground" />
+          <Input
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search projects by name or location..."
+            className="border-0 bg-transparent"
+          />
+        </div>
+      </Card>
+
       {error && <p className="text-destructive">{error}</p>}
       <div className="grid gap-6">
-        {projects.map((project) => (
+        {filteredProjects.map((project) => (
           <Card key={project.id} className="p-6 hover:border-primary/50 transition-colors">
             <div className="flex items-start justify-between mb-4">
               <div>
@@ -72,9 +99,34 @@ export default function ProjectsPage() {
                   </div>
                 </div>
               </div>
-              <button className="p-2 hover:bg-secondary rounded-lg">
-                <MoreVertical className="w-5 h-5 text-muted-foreground" />
-              </button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="p-2 hover:bg-secondary rounded-lg">
+                    <MoreVertical className="w-5 h-5 text-muted-foreground" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem>Edit</DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={async () => {
+                      try {
+                        const token = localStorage.getItem("auth_token");
+                        await fetch(`http://localhost:3000/project/${project.id}`, {
+                          method: "DELETE",
+                          headers: {
+                            Authorization: `Bearer ${token}`,
+                          },
+                        });
+                        setProjects(projects.filter((p) => p.id !== project.id));
+                      } catch (error) {
+                        setError("Failed to delete project");
+                      }
+                    }}
+                  >
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
             <div className="flex items-center gap-4">
               <div className="flex-1">

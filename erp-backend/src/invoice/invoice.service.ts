@@ -8,14 +8,8 @@ export class InvoiceService {
   constructor(private prisma: PrismaService) {}
 
   create(createInvoiceDto: CreateInvoiceDto) {
-    const { clientId, ...rest } = createInvoiceDto;
     return this.prisma.invoice.create({
-      data: {
-        ...rest,
-        client: {
-          connect: { id: clientId },
-        },
-      },
+      data: createInvoiceDto,
     });
   }
 
@@ -37,16 +31,9 @@ export class InvoiceService {
   }
 
   update(id: string, updateInvoiceDto: UpdateInvoiceDto) {
-    const { clientId, ...rest } = updateInvoiceDto;
-    const data: any = { ...rest };
-    if (clientId) {
-      data.client = {
-        connect: { id: clientId },
-      };
-    }
     return this.prisma.invoice.update({
       where: { id },
-      data,
+      data: updateInvoiceDto,
     });
   }
 
