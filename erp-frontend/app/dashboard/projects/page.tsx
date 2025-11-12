@@ -2,7 +2,7 @@
 
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Plus, MoreVertical, MapPin, Calendar, Search } from "lucide-react"
+import { Plus, MoreVertical, MapPin, Users, Search } from "lucide-react"
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Input } from "@/components/ui/input"
@@ -12,27 +12,47 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import Image from "next/image"
+import { Progress } from "@/components/ui/progress"
+import { useRouter } from "next/navigation"
 
 interface Project {
   id: string
   name: string
   location: string
-  startDate: string
-  endDate: string
   status: string
   progress: number
-  team: number
+  photos: string[]
+  clients: { client: { id: string, name: string } }[]
 }
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [projectToDelete, setProjectToDelete] = useState<Project | null>(null)
+  const router = useRouter()
 
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const res = await fetch("http://localhost:3000/project")
+        const token = localStorage.getItem("auth_token")
+        const res = await fetch("http://localhost:3000/project", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
         if (res.ok) {
           const data = await res.json()
           setProjects(data)
@@ -47,11 +67,42 @@ export default function ProjectsPage() {
     fetchProjects()
   }, [])
 
+  const handleDeleteClick = (project: Project, e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setProjectToDelete(project)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleDelete = async () => {
+    if (!projectToDelete) return
+
+    try {
+      const token = localStorage.getItem("auth_token")
+      const res = await fetch(`http://localhost:3000/project/${projectToDelete.id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      
+      if (res.ok) {
+        setProjects(projects.filter((p) => p.id !== projectToDelete.id))
+        setDeleteDialogOpen(false)
+        setProjectToDelete(null)
+      } else {
+        setError("Failed to delete project")
+      }
+    } catch (error) {
+      setError("An unexpected error occurred. Please try again.")
+    }
+  }
+
   const filteredProjects = projects.filter(
     (p) =>
       p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.location.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  )
 
   return (
     <div className="space-y-6">
@@ -68,7 +119,6 @@ export default function ProjectsPage() {
         </Link>
       </div>
 
-      {/* Search Bar */}
       <Card className="p-4 border border-border">
         <div className="flex gap-2">
           <Search className="w-5 h-5 text-muted-foreground" />
@@ -82,73 +132,103 @@ export default function ProjectsPage() {
       </Card>
 
       {error && <p className="text-destructive">{error}</p>}
-      <div className="grid gap-6">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {filteredProjects.map((project) => (
-          <Card key={project.id} className="p-6 hover:border-primary/50 transition-colors">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h3 className="text-xl font-bold mb-2">{project.name}</h3>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <MapPin className="w-4 h-4" />
-                    {project.location}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Calendar className="w-4 h-4" />
-                    {new Date(project.startDate).toLocaleDateString()} to {new Date(project.endDate).toLocaleDateString()}
-                  </div>
-                </div>
-              </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="p-2 hover:bg-secondary rounded-lg">
-                    <MoreVertical className="w-5 h-5 text-muted-foreground" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem>Edit</DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={async () => {
-                      try {
-                        const token = localStorage.getItem("auth_token");
-                        await fetch(`http://localhost:3000/project/${project.id}`, {
-                          method: "DELETE",
-                          headers: {
-                            Authorization: `Bearer ${token}`,
-                          },
-                        });
-                        setProjects(projects.filter((p) => p.id !== project.id));
-                      } catch (error) {
-                        setError("Failed to delete project");
-                      }
+          <div key={project.id} className="block">
+            <Card className="overflow-hidden hover:shadow-lg transition-shadow h-full">
+              <Link href={`/dashboard/projects/${project.id}`}>
+                <div className="relative h-48 w-full">
+                  <Image
+                    src={project.photos.length > 0 ? `http://localhost:3000/${project.photos[0]}` : "/placeholder.jpg"}
+                    alt={`Thumbnail for ${project.name}`}
+                    layout="fill"
+                    objectFit="cover"
+                    onError={(e) => {
+                      e.currentTarget.src = "/placeholder.jpg"
                     }}
-                  >
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="flex-1">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium">Progress</span>
-                  <span className="text-sm text-muted-foreground">{project.progress}%</span>
+                  />
                 </div>
-                <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                  <div className="h-full bg-primary transition-all" style={{ width: `${project.progress}%` }}></div>
+              </Link>
+              <div className="p-4">
+                <div className="flex items-start justify-between mb-2">
+                  <Link href={`/dashboard/projects/${project.id}`} className="flex-1">
+                    <div>
+                      <h3 className="text-xl font-bold">{project.name}</h3>
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <MapPin className="w-4 h-4" />
+                        {project.location}
+                      </div>
+                    </div>
+                  </Link>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="p-2 hover:bg-secondary rounded-lg">
+                        <MoreVertical className="w-5 h-5 text-muted-foreground" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          router.push(`/dashboard/projects/${project.id}/edit`)
+                        }}
+                      >
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={(e) => handleDeleteClick(project, e)}
+                        className="text-red-600 focus:text-red-600"
+                      >
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4 flex-wrap">
+                  <Users className="w-4 h-4" />
+                  {project.clients.map((c, i) => (
+                    <Link
+                      key={c.client.id}
+                      href={`/dashboard/clients/${c.client.id}`}
+                      className="hover:underline"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {c.client.name}{i < project.clients.length - 1 ? ', ' : ''}
+                    </Link>
+                  ))}
+                </div>
+                <Link href={`/dashboard/projects/${project.id}`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium">Progress</span>
+                    <span className="text-sm text-muted-foreground">{project.progress}%</span>
+                  </div>
+                  <Progress value={project.progress} />
+                </Link>
               </div>
-              <div className="text-right">
-                <p className="text-xs text-muted-foreground">Team Size</p>
-                <p className="text-lg font-bold">{project.team}</p>
-              </div>
-              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700">
-                {project.status}
-              </span>
-            </div>
-          </Card>
+            </Card>
+          </div>
         ))}
       </div>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Project</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{projectToDelete?.name}"? This action cannot be undone and will remove all associated data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

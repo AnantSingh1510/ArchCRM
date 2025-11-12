@@ -317,7 +317,7 @@ export default function ClientDetailsPage({ params }: { params: Promise<{ id: st
         </div>
 
         <div className="space-y-3">
-          {client.documents.map((doc) => {
+          {client.documents.map((doc: any) => {
             const badge = getStatusBadge(doc.status)
             return (
               <div
@@ -348,12 +348,16 @@ export default function ClientDetailsPage({ params }: { params: Promise<{ id: st
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button className="p-2 hover:bg-slate-200 rounded-lg transition-colors">
-                    <Eye className="w-4 h-4 text-slate-600" />
-                  </button>
-                  <button className="p-2 hover:bg-slate-200 rounded-lg transition-colors">
-                    <Download className="w-4 h-4 text-slate-600" />
-                  </button>
+                  <a href={`http://localhost:3000/document/download/${doc.url.split('\\').pop()}`} target="_blank" rel="noopener noreferrer">
+                    <div className="p-2 hover:bg-slate-200 rounded-lg transition-colors">
+                      <Eye className="w-4 h-4 text-slate-600" />
+                    </div>
+                  </a>
+                  <a href={`http://localhost:3000/document/download/${doc.url.split('\\').pop()}`}>
+                    <button className="p-2 hover:bg-slate-200 rounded-lg transition-colors">
+                      <Download className="w-4 h-4 text-slate-600" />
+                    </button>
+                  </a>
                   <button className="p-2 hover:bg-red-50 rounded-lg transition-colors">
                     <Trash2 className="w-4 h-4 text-red-600" />
                   </button>

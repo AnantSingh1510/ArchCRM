@@ -27,6 +27,13 @@ export class UserService {
     return this.prisma.user.findUnique({ where: { username } });
   }
 
+  findById(id: string) {
+    return this.prisma.user.findUnique({
+      where: { id },
+      include: { client: true },
+    });
+  }
+
   findOneByEmail(email: string) {
     return this.prisma.user.findUnique({
       where: { email },

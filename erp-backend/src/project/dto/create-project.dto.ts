@@ -1,7 +1,8 @@
 export class CreateProjectDto {
   name: string;
-  clientId: string;
+  clientIds?: string[];
   location: string;
-  startDate: Date;
-  endDate: Date;
+  startDate?: Date;
+  endDate?: Date;
+  photos?: string[];
 }

@@ -5,6 +5,17 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Plus, Search, FileText, Download, Eye, Trash2, CheckCircle, Clock, AlertCircle } from "lucide-react"
 import { Input } from "@/components/ui/input"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import type { Document } from "@/lib/types"
 import Link from "next/link"
 import { use } from "react"
@@ -49,6 +60,25 @@ export default function ClientDocumentsPage({ params }: { params: Promise<{ id: 
       fetchDocuments();
     }
   }, [id]);
+
+  const handleDelete = async (docId: string) => {
+    try {
+      const token = localStorage.getItem("auth_token");
+      const res = await fetch(`http://localhost:3000/document/${docId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.ok) {
+        setDocuments(documents.filter((d) => d.id !== docId));
+      } else {
+        setError("Failed to delete document");
+      }
+    } catch (error) {
+      setError("An unexpected error occurred. Please try again.");
+    }
+  };
 
   const filteredDocuments = documents.filter(
     (d) =>
@@ -153,29 +183,32 @@ export default function ClientDocumentsPage({ params }: { params: Promise<{ id: 
               >
                 <CheckCircle className="w-4 h-4 text-green-600" />
               </Button>
-              <button
-                onClick={async () => {
-                  try {
-                    const token = localStorage.getItem("auth_token");
-                    const res = await fetch(`http://localhost:3000/document/${doc.id}`, {
-                      method: "DELETE",
-                      headers: {
-                        Authorization: `Bearer ${token}`,
-                      },
-                    });
-                    if (res.ok) {
-                      setDocuments(documents.filter((d) => d.id !== doc.id));
-                    } else {
-                      setError("Failed to delete document");
-                    }
-                  } catch (error) {
-                    setError("An unexpected error occurred. Please try again.");
-                  }
-                }}
-                className="p-2 hover:bg-red-50 rounded-lg transition-colors"
-              >
-                <Trash2 className="w-4 h-4 text-red-600" />
-              </button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button
+                    className="p-2 hover:bg-red-50 rounded-lg transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4 text-red-600" />
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Document</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete "{doc.name}"? This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => handleDelete(doc.id)}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </Card>
         ))}

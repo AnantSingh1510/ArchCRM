@@ -75,7 +75,6 @@ export default function NewDocumentPage() {
 
     const formData = new FormData()
     formData.append("file", file)
-    formData.append("clientId", clientId)
     formData.append("name", name)
     formData.append("type", type)
     formData.append("tags", tags)
@@ -118,41 +117,6 @@ export default function NewDocumentPage() {
         )}
 
         <form onSubmit={handleUpload} className="space-y-6">
-          <div className="space-y-2">
-            <Label>Client</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  className="w-full justify-between"
-                >
-                  {clientId
-                    ? clients.find((client) => client.id === clientId)?.name
-                    : "Select client..."}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0">
-                <Command>
-                  <CommandInput placeholder="Search client..." />
-                  <CommandEmpty>No client found.</CommandEmpty>
-                  <CommandGroup>
-                    {clients.map((client) => (
-                      <CommandItem
-                        key={client.id}
-                        value={client.id} // Use ID as value
-                        onSelect={() => {
-                          setClientId(client.id);
-                        }}
-                      >
-                        {client.name}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </Command>
-              </PopoverContent>
-            </Popover>
-          </div>
           <div className="space-y-2">
             <Label htmlFor="name">Document Name</Label>
             <Input

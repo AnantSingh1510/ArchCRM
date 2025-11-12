@@ -8,16 +8,33 @@ export class ProjectService {
   constructor(private prisma: PrismaService) {}
 
   create(createProjectDto: CreateProjectDto) {
-    // Prisma handles the relation automatically when the foreign key `clientId` is provided.
+    const { clientIds, ...rest } = createProjectDto;
     return this.prisma.project.create({
-      data: createProjectDto,
+      data: {
+        ...rest,
+        ...(clientIds && {
+          clients: {
+            create: clientIds.map((clientId) => ({
+              client: {
+                connect: {
+                  id: clientId,
+                },
+              },
+            })),
+          },
+        }),
+      },
     });
   }
 
   findAll() {
     return this.prisma.project.findMany({
       include: {
-        client: true,
+        clients: {
+          include: {
+            client: true,
+          },
+        },
       },
     });
   }
@@ -26,7 +43,14 @@ export class ProjectService {
     return this.prisma.project.findUnique({
       where: { id },
       include: {
-        client: true,
+        clients: {
+          include: {
+            client: true,
+          },
+        },
+        phases: true,
+        members: true,
+        properties: true,
       },
     });
   }

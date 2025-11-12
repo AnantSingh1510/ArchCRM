@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, use } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -9,8 +9,8 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import BackButton from "@/components/BackButton"
 
-export default function NewClientDocumentPage({ params }: { params: { id: string } }) {
-  const { id } = params;
+export default function NewClientDocumentPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const [file, setFile] = useState<File | null>(null)
   const [name, setName] = useState("")
   const [type, setType] = useState("")

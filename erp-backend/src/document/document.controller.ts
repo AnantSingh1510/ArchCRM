@@ -27,11 +27,10 @@ export class DocumentController {
       }),
     }),
   )
-  uploadFile(@UploadedFile() file: Express.Multer.File, @Body() createDocumentDto: CreateDocumentDto, @Req() req) {
+  async uploadFile(@UploadedFile() file: Express.Multer.File, @Body() createDocumentDto: CreateDocumentDto, @Req() req) {
     const tags = createDocumentDto.tags ? (createDocumentDto.tags as any).split(',').map(tag => tag.trim()) : [];
     return this.documentService.create({
       ...createDocumentDto,
-      clientId: req.user.clientId,
       name: createDocumentDto.name,
       type: createDocumentDto.type,
       tags,

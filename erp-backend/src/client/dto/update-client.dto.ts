@@ -15,4 +15,5 @@ export class UpdateClientDto {
   ifscCode?: string;
   status?: string;
   kycStatus?: string;
+  properties?: any[];
 }

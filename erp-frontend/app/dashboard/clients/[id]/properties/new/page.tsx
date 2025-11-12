@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -9,11 +9,16 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import BackButton from "@/components/BackButton"
 
-export default function NewPropertyPage({ params }: { params: { id: string } }) {
+export default function NewPropertyPage() {
+  const params = useParams()
   const [formData, setFormData] = useState({
     plotNumber: "",
     dimensions: "",
+    location: "",
+    type: "RESIDENTIAL",
+    status: "AVAILABLE",
     projectId: "",
+    clientId: params.id as string,
   })
   const [projects, setProjects] = useState<any[]>([])
   const [error, setError] = useState("")
@@ -50,7 +55,7 @@ export default function NewPropertyPage({ params }: { params: { id: string } }) 
     e.preventDefault()
     setError("")
 
-    if (!formData.plotNumber || !formData.dimensions || !formData.projectId) {
+    if (!formData.plotNumber || !formData.dimensions || !formData.location || !formData.projectId) {
       setError("Please fill in all fields")
       return
     }
@@ -63,10 +68,7 @@ export default function NewPropertyPage({ params }: { params: { id: string } }) 
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          ...formData,
-          clientId: params.id,
-        }),
+        body: JSON.stringify(formData),
       })
 
       if (res.ok) {
@@ -121,6 +123,44 @@ export default function NewPropertyPage({ params }: { params: { id: string } }) 
               onChange={handleChange}
               required
             />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="location">Location</Label>
+            <Input
+              id="location"
+              type="text"
+              name="location"
+              value={formData.location}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="type">Type</Label>
+            <Select onValueChange={(value) => setFormData({ ...formData, type: value })} defaultValue={formData.type}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="RESIDENTIAL">Residential</SelectItem>
+                <SelectItem value="COMMERCIAL">Commercial</SelectItem>
+                <SelectItem value="INDUSTRIAL">Industrial</SelectItem>
+                <SelectItem value="LAND">Land</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="status">Status</Label>
+            <Select onValueChange={(value) => setFormData({ ...formData, status: value })} defaultValue={formData.status}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="AVAILABLE">Available</SelectItem>
+                <SelectItem value="SOLD">Sold</SelectItem>
+                <SelectItem value="RESERVED">Reserved</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="projectId">Project</Label>

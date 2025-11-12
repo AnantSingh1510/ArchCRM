@@ -5,4 +5,5 @@ export class CreateUserDto {
   phone?: string;
   password: string;
   role: string;
+  clientId?: string;
 }

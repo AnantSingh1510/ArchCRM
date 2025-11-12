@@ -1,65 +1,50 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Plus } from "lucide-react"
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-
-interface Client {
-  id: string;
-  name: string;
-}
+import { Label } from "@/components/ui/label"
+import { MultiSelect } from "@/components/ui/multi-select"
+import { FileUpload } from "@/components/ui/file-upload"
+import BackButton from "@/components/BackButton"
 
 export default function NewProjectPage() {
-  const [clients, setClients] = useState<Client[]>([]);
   const [formData, setFormData] = useState({
     name: "",
-    clientId: "",
     location: "",
-    startDate: "",
-    endDate: "",
+    clientIds: [] as string[],
   })
+  const [files, setFiles] = useState<File[]>([])
+  const [clients, setClients] = useState<any[]>([])
   const [error, setError] = useState("")
   const router = useRouter()
 
   useEffect(() => {
     const fetchClients = async () => {
       try {
-        const token = localStorage.getItem("auth_token");
+        const token = localStorage.getItem("auth_token")
         const res = await fetch("http://localhost:3000/client", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        });
+        })
         if (res.ok) {
-          const data = await res.json();
-          setClients(data);
+          const data = await res.json()
+          setClients(data)
         } else {
-          setError("Failed to fetch clients");
+          setError("Failed to fetch clients")
         }
       } catch (error) {
-        setError("An unexpected error occurred. Please try again.");
+        setError("An unexpected error occurred. Please try again.")
       }
-    };
+    }
 
-    fetchClients();
-  }, []);
+    fetchClients()
+  }, [])
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
@@ -67,43 +52,50 @@ export default function NewProjectPage() {
     e.preventDefault()
     setError("")
 
-    if (!formData.name || !formData.clientId || !formData.location || !formData.startDate || !formData.endDate) {
+    if (!formData.name || !formData.location) {
       setError("Please fill in all fields")
       return
     }
 
+    const projectData = new FormData()
+    projectData.append("name", formData.name)
+    projectData.append("location", formData.location)
+    formData.clientIds.forEach((id) => projectData.append("clientIds[]", id))
+    files.forEach((file) => projectData.append("photos", file))
+
     try {
-      const token = localStorage.getItem("auth_token");
+      const token = localStorage.getItem("auth_token")
       const res = await fetch("http://localhost:3000/project", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          ...formData,
-          startDate: new Date(formData.startDate),
-          endDate: new Date(formData.endDate),
-        }),
-      });
+        body: projectData,
+      })
 
       if (res.ok) {
-        router.push("/dashboard/projects");
+        router.push("/dashboard/projects")
       } else {
-        const errorData = await res.json();
-        setError(errorData.message || "Failed to create project");
+        const errorData = await res.json()
+        setError(errorData.message || "Failed to create project")
       }
     } catch (error) {
-      setError("An unexpected error occurred. Please try again.");
+      setError("An unexpected error occurred. Please try again.")
     }
   }
 
+  const clientOptions = clients.map((client) => ({
+    value: client.id,
+    label: client.name,
+  }))
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center gap-4">
+        <BackButton />
         <div>
           <h1 className="text-3xl font-bold">New Project</h1>
-          <p className="text-muted-foreground">Create a new project</p>
+          <p className="text-muted-foreground">Create a new project and assign it to clients</p>
         </div>
       </div>
 
@@ -114,79 +106,34 @@ export default function NewProjectPage() {
           </div>
         )}
 
-        <form onSubmit={handleCreateProject} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">Project Name</label>
-            <Input
-              type="text"
-              name="name"
-              placeholder="Project Name"
-              value={formData.name}
-              onChange={handleChange}
-            />
+        <form onSubmit={handleCreateProject} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="name">Project Name</Label>
+              <Input
+                id="name"
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="location">Location</Label>
+              <Input
+                id="location"
+                type="text"
+                name="location"
+                value={formData.location}
+                onChange={handleChange}
+                required
+              />
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Client</label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  className="w-full justify-between"
-                >
-                  {formData.clientId
-                    ? clients.find((client) => client.id === formData.clientId)?.name
-                    : "Select client..."}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0">
-                <Command>
-                  <CommandInput placeholder="Search client..." />
-                  <CommandEmpty>No client found.</CommandEmpty>
-                  <CommandGroup>
-                    {clients.map((client) => (
-                      <CommandItem
-                        key={client.id}
-                        value={client.name}
-                        onSelect={() => {
-                          setFormData({ ...formData, clientId: client.id });
-                        }}
-                      >
-                        {client.name}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </Command>
-              </PopoverContent>
-            </Popover>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Location</label>
-            <Input
-              type="text"
-              name="location"
-              placeholder="Location"
-              value={formData.location}
-              onChange={handleChange}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Start Date</label>
-            <Input
-              type="date"
-              name="startDate"
-              value={formData.startDate}
-              onChange={handleChange}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">End Date</label>
-            <Input
-              type="date"
-              name="endDate"
-              value={formData.endDate}
-              onChange={handleChange}
-            />
+          <div className="space-y-2">
+            <Label>Project Photos</Label>
+            <FileUpload onFilesChange={setFiles} />
           </div>
           <Button type="submit" className="w-full">
             Create Project

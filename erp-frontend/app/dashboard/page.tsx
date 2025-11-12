@@ -173,7 +173,9 @@ function DashboardPage() {
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
                       <h3 className="font-semibold text-slate-900">{project.name}</h3>
-                      <p className="text-sm text-slate-500">{project.client.name}</p>
+                      <p className="text-sm text-slate-500">
+                        {project.clients.map((c: any) => c.client.name).join(", ")}
+                      </p>
                     </div>
                     <div className="flex items-center gap-2">
                       <span

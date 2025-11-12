@@ -33,16 +33,16 @@ model User {
 model Project {
   id          String        @id @default(cuid())
   name        String
-  client      Client   @relation(fields: [clientId], references: [id])
-  clientId    String
+  clients     ClientsOnProjects[]
   location    String
-  startDate   DateTime
-  endDate     DateTime
+  startDate   DateTime?
+  endDate     DateTime?
   status      ProjectStatus @default(PLANNING)
   progress    Int           @default(0)
   phases      Phase[]
   members     User[]
   properties  Property[]
+  photos      String[]
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
@@ -122,7 +122,7 @@ model Client {
   ifscCode            String?
   status              String    @default("ACTIVE")
   kycStatus           String    @default("PENDING")
-  projects            Project[]
+  projects            ClientsOnProjects[]
   invoices            Invoice[]
   documents           Document[]
   user                User?
@@ -134,17 +134,42 @@ model Client {
 }
 
 model Property {
-  id          String   @id @default(cuid())
+  id          String         @id @default(cuid())
   plotNumber  String
   dimensions  String
-  project     Project  @relation(fields: [projectId], references: [id])
+  location    String
+  type        PropertyType   @default(RESIDENTIAL)
+  status      PropertyStatus @default(AVAILABLE)
+  project     Project        @relation(fields: [projectId], references: [id])
   projectId   String
-  client      Client   @relation(fields: [clientId], references: [id])
+  client      Client         @relation(fields: [clientId], references: [id])
   clientId    String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
 
   @@map("property")
+}
+
+model ClientsOnProjects {
+  project   Project @relation(fields: [projectId], references: [id])
+  projectId String
+  client    Client  @relation(fields: [clientId], references: [id])
+  clientId  String
+
+  @@id([projectId, clientId])
+}
+
+enum PropertyType {
+  RESIDENTIAL
+  COMMERCIAL
+  INDUSTRIAL
+  LAND
+}
+
+enum PropertyStatus {
+  AVAILABLE
+  SOLD
+  RESERVED
 }
 
 model Invoice {
