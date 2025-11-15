@@ -5,7 +5,7 @@ import { useEffect, useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Upload, Download, Eye, CheckCircle, Clock, AlertCircle } from "lucide-react"
+import { Upload, Download, Eye, CheckCircle, Clock, AlertCircle, X } from "lucide-react"
 import Link from "next/link"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 
@@ -37,6 +37,7 @@ export default function MyDocumentsPage() {
   const [newFile, setNewFile] = useState<File | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [previewDoc, setPreviewDoc] = useState<MyDoc | null>(null)
+  const [isViewerOpen, setIsViewerOpen] = useState(false)
 
   useEffect(() => {
     const fetchDocuments = async () => {
@@ -125,16 +126,21 @@ export default function MyDocumentsPage() {
   const requiredDocs = documentTypes.filter((d) => d.required)
   const uploadedRequired = requiredDocs.filter((d) => myDocuments.some((doc) => doc.documentType === d.value))
 
+  const openDocumentViewer = (doc: MyDoc) => {
+    setPreviewDoc(doc)
+    setIsViewerOpen(true)
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold">My Documents</h1>
           <p className="text-muted-foreground">Upload and manage your personal and business documents</p>
         </div>
         <Link href="/dashboard/user-client/my-documents/new">
-          <Button className="gap-2">
+          <Button className="gap-2 w-full sm:w-auto">
             <Upload className="w-4 h-4" />
             Upload Document
           </Button>
@@ -145,7 +151,7 @@ export default function MyDocumentsPage() {
       <Card className="p-6 border-primary/20 bg-primary/5">
         <div className="space-y-4">
           <h2 className="text-lg font-bold">Document Submission Status</h2>
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">Required Documents</p>
               <p className="text-3xl font-bold text-primary">{requiredDocs.length}</p>
@@ -213,76 +219,73 @@ export default function MyDocumentsPage() {
       </Card>
 
       {/* My Documents */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-bold">My Uploaded Documents</h2>
-        {myDocuments.length === 0 ? (
-          <Card className="p-8 text-center text-muted-foreground">
-            No documents uploaded yet. Start by uploading your required documents.
-          </Card>
-        ) : (
-          <div className="space-y-3">
-            {myDocuments.map((doc) => {
-              const docType = documentTypes.find((d) => d.value === doc.documentType)
-              const badge = getStatusBadge(doc.status)
-              return (
-                <Card key={doc.id} className="p-4 hover:border-primary/50 transition-colors">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="text-2xl">📄</span>
-                        <div>
-                          <h3 className="font-semibold">{doc.name}</h3>
-                          <p className="text-sm text-muted-foreground">{docType?.label}</p>
+      <Card>
+        <div className="p-6">
+          <h2 className="text-lg font-bold">My Uploaded Documents</h2>
+        </div>
+        <div className="border-t overflow-x-auto">
+          {myDocuments.length === 0 ? (
+            <div className="p-8 text-center text-muted-foreground">
+              No documents uploaded yet. Start by uploading your required documents.
+            </div>
+          ) : (
+            <table className="w-full">
+              <thead>
+                <tr className="border-b">
+                  <th className="px-6 py-3 text-left text-sm font-semibold">Document</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold">Uploaded</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold">Status</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {myDocuments.map((doc) => {
+                  const docType = documentTypes.find((d) => d.value === doc.documentType)
+                  const badge = getStatusBadge(doc.status)
+                  return (
+                    <tr key={doc.id} className="border-b hover:bg-secondary/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="font-semibold">{doc.name}</div>
+                        <div className="text-sm text-muted-foreground">{docType?.label}</div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-muted-foreground">
+                        {new Date(doc.uploadedDate).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div
+                          className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-semibold ${badge.bg} ${badge.text}`}
+                        >
+                          {getStatusIcon(doc.status)}
+                          {doc.status.charAt(0).toUpperCase() + doc.status.slice(1)}
                         </div>
-                      </div>
-                      <p className="text-xs text-muted-foreground">Uploaded: {new Date(doc.uploadedDate).toLocaleDateString()}</p>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <div
-                        className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-semibold whitespace-nowrap ${badge.bg} ${badge.text}`}
-                      >
-                        {getStatusIcon(doc.status)}
-                        {doc.status.charAt(0).toUpperCase() + doc.status.slice(1)}
-                      </div>
-
-                      {doc.status === "rejected" && (
-                        <Button size="sm" variant="outline" className="gap-1 bg-transparent">
-                          <Upload className="w-3 h-3" />
-                          Reupload
-                        </Button>
-                      )}
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <button className="p-2 hover:bg-secondary rounded">
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="gap-2"
+                            onClick={() => openDocumentViewer(doc)}
+                          >
                             <Eye className="w-4 h-4" />
-                          </button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-3xl">
-                          <DialogHeader>
-                            <DialogTitle>{doc.name}</DialogTitle>
-                          </DialogHeader>
-                          <div className="mt-4">
-                            <iframe
-                              src={`http://localhost:3000/document/download/${doc.url.split('\\').pop()}`}
-                              className="w-full h-[600px]"
-                            />
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-                      <a href={`http://localhost:3000/document/download/${doc.url.split('\\').pop()}`} download>
-                        <button className="p-2 hover:bg-secondary rounded">
-                          <Download className="w-4 h-4" />
-                        </button>
-                      </a>
-                    </div>
-                  </div>
-                </Card>
-              )
-            })}
-          </div>
-        )}
-      </div>
+                            View
+                          </Button>
+                          <a href={`http://localhost:3000/document/download/${doc.url.split('\\').pop()}`} download>
+                            <Button variant="outline" size="sm" className="gap-2">
+                              <Download className="w-4 h-4" />
+                              Download
+                            </Button>
+                          </a>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </Card>
 
       {/* Guidelines */}
       <Card className="p-6 bg-secondary/30">
@@ -297,6 +300,57 @@ export default function MyDocumentsPage() {
           <li>All documents will be verified within 24-48 hours</li>
         </ul>
       </Card>
+
+      {/* Full Screen Document Viewer */}
+      {isViewerOpen && previewDoc && (
+        <div className="fixed inset-0 z-50 bg-black/95 flex flex-col">
+          {/* Header */}
+          <div className="bg-gray-900 border-b border-gray-700 px-4 sm:px-6 py-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <h2 className="text-lg sm:text-xl font-bold text-white truncate">{previewDoc.name}</h2>
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-1 text-xs sm:text-sm text-gray-400">
+                  <span className="truncate">{documentTypes.find((d) => d.value === previewDoc.documentType)?.label}</span>
+                  <span className="hidden sm:inline">•</span>
+                  <span className="whitespace-nowrap">{new Date(previewDoc.uploadedDate).toLocaleDateString()}</span>
+                  <span className="hidden sm:inline">•</span>
+                  <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold ${getStatusBadge(previewDoc.status).bg} ${getStatusBadge(previewDoc.status).text}`}>
+                    {getStatusIcon(previewDoc.status)}
+                    {previewDoc.status.charAt(0).toUpperCase() + previewDoc.status.slice(1)}
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <a href={`http://localhost:3000/document/download/${previewDoc.url.split('\\').pop()}`} download>
+                  <Button variant="outline" size="sm" className="gap-2 bg-gray-800 border-gray-700 text-white hover:bg-gray-700">
+                    <Download className="w-4 h-4" />
+                    <span className="hidden sm:inline">Download</span>
+                  </Button>
+                </a>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setIsViewerOpen(false)}
+                  className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Document Content */}
+          <div className="flex-1 p-2 sm:p-4 overflow-hidden">
+            <div className="h-full bg-white rounded-lg shadow-2xl overflow-hidden">
+              <iframe
+                src={`http://localhost:3000/document/download/${previewDoc.url.split('\\').pop()}`}
+                className="w-full h-full"
+                title={previewDoc.name}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

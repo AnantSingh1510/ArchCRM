@@ -30,9 +30,7 @@ export default function ClientPortalPage() {
         const clientId = payload.clientId
         
         if (!clientId) {
-          setError("Invalid token. Please log in again.")
-          setLoading(false)
-          router.push("/login")
+          router.push("/dashboard")
           return
         }
         

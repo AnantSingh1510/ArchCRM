@@ -67,6 +67,11 @@ function UserManagementPage() {
       : "http://localhost:3000/user";
     const method = editingUser ? "PATCH" : "POST";
 
+    const dataToSend: any = { ...formData };
+    if (editingUser && !dataToSend.password) {
+      delete dataToSend.password;
+    }
+
     try {
       const token = localStorage.getItem("auth_token");
       const res = await fetch(url, {
@@ -75,7 +80,7 @@ function UserManagementPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(dataToSend),
       });
 
       if (res.ok) {
@@ -234,17 +239,15 @@ function UserManagementPage() {
                 <option value="user">User</option>
               </select>
             </div>
-            {!editingUser && (
-              <div>
-                <label className="block text-sm font-medium mb-2">Password</label>
-                <Input
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  placeholder="••••••••"
-                />
-              </div>
-            )}
+            <div>
+              <label className="block text-sm font-medium mb-2">Password</label>
+              <Input
+                type="password"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                placeholder={editingUser ? "New password (leave blank to keep current)" : "••••••••"}
+              />
+            </div>
           </div>
           <div className="flex gap-2 mt-4">
             <Button onClick={handleSaveUser}>Save User</Button>
@@ -338,7 +341,7 @@ function UserManagementPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid md:grid-cols-4 gap-4">
+      <div className="grid md:grid-cols-3 gap-4">
         <Card className="p-6">
           <div className="flex items-start justify-between">
             <div>
@@ -364,15 +367,6 @@ function UserManagementPage() {
               <p className="text-3xl font-bold text-red-600">{users.filter((u) => !u.active).length}</p>
             </div>
             <XCircle className="w-8 h-8 text-red-600/20" />
-          </div>
-        </Card>
-        <Card className="p-6">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">Owners</p>
-              <p className="text-3xl font-bold text-blue-600">{users.filter((u) => u.role === "owner").length}</p>
-            </div>
-            <Shield className="w-8 h-8 text-blue-600/20" />
           </div>
         </Card>
       </div>

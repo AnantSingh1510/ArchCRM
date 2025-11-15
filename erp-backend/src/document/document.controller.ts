@@ -29,10 +29,14 @@ export class DocumentController {
   )
   async uploadFile(@UploadedFile() file: Express.Multer.File, @Body() createDocumentDto: CreateDocumentDto, @Req() req) {
     const tags = createDocumentDto.tags ? (createDocumentDto.tags as any).split(',').map(tag => tag.trim()) : [];
+    const clientId = req.user.role === 'USER' ? req.user.clientId : createDocumentDto.clientId;
+    console.log('client:', req.user);
+    console.log('Uploading file for clientId:', clientId);
     return this.documentService.create({
       ...createDocumentDto,
       name: createDocumentDto.name,
       type: createDocumentDto.type,
+      clientId,
       tags,
       size: file.size.toString(),
       url: file.path,

@@ -191,7 +191,7 @@ export default function ClientDetailsPage({ params }: { params: Promise<{ id: st
         </div>
       </div>
 
-      {client.kycStatus !== "approved" && (
+      {client.kycStatus !== "approved".toUpperCase() && (
         <Card className="p-4 bg-yellow-50 border border-yellow-200">
           <div className="flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />

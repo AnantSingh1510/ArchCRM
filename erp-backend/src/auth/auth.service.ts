@@ -24,7 +24,7 @@ export class AuthService {
       username: user.username,
       sub: user.id,
       role: user.role,
-      clientId: 'cmhwbtwy40000zoiw92mbujqy',  // TODO: Make this dynamic
+      clientId: user.clientId,  // TODO: Make this dynamic
       abcd: 23
     };
     return {
