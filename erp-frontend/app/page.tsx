@@ -13,7 +13,7 @@ export default function LandingPage() {
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
               <Building2 className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="font-semibold text-lg">OperaHub</span>
+            <span className="font-semibold text-lg">SHF Homes</span>
           </div>
           <div className="flex items-center gap-4">
             <Link href="/login">
@@ -112,9 +112,9 @@ export default function LandingPage() {
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
               <Building2 className="w-5 h-5 text-primary" />
-              <span className="font-semibold">OperaHub</span>
+              <span className="font-semibold">SHF Homes</span>
             </div>
-            <p className="text-sm text-muted-foreground">© 2025 OperaHub. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">© 2025 SHF Homes. All rights reserved.</p>
           </div>
         </div>
       </footer>

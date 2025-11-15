@@ -80,14 +80,14 @@ export default function RegisterPage() {
               <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
                 <Building2 className="w-6 h-6 text-primary-foreground" />
               </div>
-              <span className="font-bold text-xl">OperaHub</span>
+              <span className="font-bold text-xl">SHF Homes</span>
             </div>
           </div>
 
           {/* Title */}
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold mb-2">Create Account</h1>
-            <p className="text-muted-foreground">Join your team on OperaHub</p>
+            <p className="text-muted-foreground">Join your team on SHF Homes</p>
           </div>
 
           {/* Error Message */}

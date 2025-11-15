@@ -22,6 +22,11 @@ export class ClientController {
     return this.clientService.findOne(id);
   }
 
+  @Get(':id/dashboard')
+  getDashboardData(@Param('id') id: string) {
+    return this.clientService.getDashboardData(id);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateClientDto: UpdateClientDto) {
     return this.clientService.update(id, updateClientDto);

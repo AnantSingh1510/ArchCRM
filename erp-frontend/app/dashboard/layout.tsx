@@ -132,7 +132,7 @@ export default function DashboardLayout({
             <Building2 className="w-6 h-6 text-white" />
           </div>
           <div className="flex-1">
-            <div className="font-bold text-lg text-white">OperaHub</div>
+            <div className="font-bold text-lg text-white">SHF Homes</div>
             <div className="text-xs text-slate-400">Enterprise ERP</div>
           </div>
         </div>

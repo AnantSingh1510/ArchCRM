@@ -8,7 +8,7 @@ const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "OperaHub - Architecture & Construction ERP",
+  title: "SHF Homes - Architecture & Construction ERP",
   description: "Professional ERP system for managing real estate architecture and construction workflows",
   generator: "v0.app",
   icons: {

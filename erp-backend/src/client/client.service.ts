@@ -63,4 +63,42 @@ export class ClientService {
   remove(id: string) {
     return this.prisma.client.delete({ where: { id } });
   }
+
+  async getDashboardData(id: string) {
+    const clientData = await this.prisma.client.findUnique({
+      where: { id },
+      include: {
+        projects: {
+          include: {
+            project: true,
+          },
+        },
+        properties: {
+          include: {
+            project: true,
+          },
+        },
+        payments: {
+          include: {
+            invoice: true,
+          },
+        },
+        communications: true,
+        invoices: {
+          where: {
+            status: 'PENDING',
+            dueDate: {
+              gte: new Date(),
+            },
+          },
+          orderBy: {
+            dueDate: 'asc',
+          },
+          take: 1,
+        },
+      },
+    });
+
+    return clientData;
+  }
 }

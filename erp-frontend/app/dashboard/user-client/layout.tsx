@@ -55,8 +55,10 @@ function ClientLayout({ children }: { children: React.ReactNode }) {
       { icon: Home, label: "Dashboard", href: "/dashboard/user-client", section: "main" },
       { icon: Building2, label: "My Properties", href: "/dashboard/user-client/properties", section: "main" },
       { icon: CreditCard, label: "My Invoices", href: "/dashboard/user-client/invoices", section: "main" },
-      { icon: MessageSquare, label: "My Messages", href: "/dashboard/user-client/messages", section: "main" },
+      { icon: MessageSquare, label: "Messages", href: "/dashboard/user-client/communications", section: "main" },
       { icon: FileText, label: "My Documents", href: "/dashboard/user-client/my-documents", section: "main" },
+      { icon: BarChart3, label: "Payment Details", href: "/dashboard/user-client/payment-details", section: "main" },
+      { icon: CreditCard, label: "Make a Payment", href: "/dashboard/user-client/make-payment", section: "main" },
     ]
 
     return baseItems
@@ -82,7 +84,7 @@ function ClientLayout({ children }: { children: React.ReactNode }) {
             <Building2 className="w-6 h-6 text-white" />
           </div>
           <div className="flex-1">
-            <div className="font-bold text-lg text-white">OperaHub</div>
+            <div className="font-bold text-lg text-white">SHF Homes</div>
             <div className="text-xs text-slate-400">Enterprise ERP</div>
           </div>
         </div>

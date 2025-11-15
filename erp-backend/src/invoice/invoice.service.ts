@@ -40,4 +40,13 @@ export class InvoiceService {
   remove(id: string) {
     return this.prisma.invoice.delete({ where: { id } });
   }
+
+  findAllByClientId(clientId: string) {
+    return this.prisma.invoice.findMany({
+      where: { clientId },
+      include: {
+        client: true,
+      },
+    });
+  }
 }
