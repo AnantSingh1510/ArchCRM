@@ -1,6 +1,9 @@
-import { IsString, IsNotEmpty, IsOptional, IsDate, IsEnum, IsNumber } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsDate, IsEnum, IsNumber, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { UnitHolderType, CustomerClassification, BookingType, BookingStatus, PropertyType } from '@prisma/client';
+import { ApplicantDto } from './applicant.dto';
+import { AddressDto } from './address.dto';
+import { DiscountDto } from './discount.dto';
 
 export class CreateBookingDto {
   @IsEnum(UnitHolderType)
@@ -53,14 +56,46 @@ export class CreateBookingDto {
   gstin?: string;
 
   @IsOptional()
-  companyDiscount?: any;
+  @ValidateNested()
+  @Type(() => DiscountDto)
+  companyDiscount?: DiscountDto;
 
   @IsOptional()
-  brokerDiscount?: any;
+  @ValidateNested()
+  @Type(() => DiscountDto)
+  brokerDiscount?: DiscountDto;
 
   @IsString()
   @IsNotEmpty()
   clientId: string;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => ApplicantDto)
+  applicantDetails?: ApplicantDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => AddressDto)
+  presentAddress?: AddressDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => AddressDto)
+  officeAddress?: AddressDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => AddressDto)
+  permanentAddress?: AddressDto;
+
+  @IsString()
+  @IsOptional()
+  mailingAddress?: string;
+
+  @IsString()
+  @IsOptional()
+  communicationPreference?: string;
 
   @IsString()
   @IsNotEmpty()

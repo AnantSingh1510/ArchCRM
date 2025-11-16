@@ -13,6 +13,11 @@ export class PropertyController {
     return this.propertyService.create(createPropertyDto);
   }
 
+  @Get()
+  findAll() {
+    return this.propertyService.findAll();
+  }
+
   @Get('user/:userId')
   findAllByUserId(@Param('userId') userId: string) {
     return this.propertyService.findAllByUserId(userId);

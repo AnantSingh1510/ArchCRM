@@ -114,17 +114,44 @@ model Client {
   phone               String
   alternatePhone      String?
   joinedDate          DateTime?
-  address             String?
-  city                String?
-  state               String?
-  pinCode             String?
-  gstNumber           String?
+  
+  // Applicant Details
+  title               String?
+  firstName           String?
+  middleName          String?
+  lastName            String?
+  relationName        String?
+  dob                 DateTime?
+  anniversaryDate     DateTime?
+  nationality         String?
+  maritalStatus       String?
+  gender              String?
+  children            Int?
+  passportNo          String?
   panNumber           String?
   aadhaarNumber       String?
+  profession          String?
+  designation         String?
+  company             String?
+
+  // Bank Details
   bankAccountNumber   String?
   ifscCode            String?
+  bankName            String?
+  bankBranch          String?
+
+  // Address Details (as JSON for simplicity)
+  presentAddress      Json?
+  officeAddress       Json?
+  permanentAddress    Json?
+  mailingAddress      String?
+  communicationPreference String?
+
+  // System Fields
   status              String    @default("ACTIVE")
   kycStatus           String    @default("PENDING")
+  
+  // Relations
   projects            ClientsOnProjects[]
   invoices            Invoice[]
   documents           Document[]

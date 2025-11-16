@@ -168,7 +168,7 @@ export default function ProjectDetailsPage() {
                             key={i}
                             onClick={() =>
                               router.push(
-                                `http://localhost:3001/dashboard/clients/${
+                                `http://localhost:3000/dashboard/clients/${
                                   c.client.id || "ckz9f0g7p0001rj1y4c7r2u6p"
                                 }`
                               )

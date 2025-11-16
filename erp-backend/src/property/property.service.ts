@@ -25,6 +25,14 @@ export class PropertyService {
     });
   }
 
+  findAll() {
+    return this.prisma.property.findMany({
+      include: {
+        project: true,
+      },
+    });
+  }
+
   async findAllByUserId(userId: string) {
     const user = await this.userService.findById(userId);
     if (!user) {

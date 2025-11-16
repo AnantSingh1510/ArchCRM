@@ -66,6 +66,7 @@ export default function DashboardLayout({
         { icon: Home, label: "Dashboard", href: "/dashboard", section: "main" },
         { icon: Users, label: "Clients", href: "/dashboard/clients", section: "main" },
         { icon: Users, label: "User Management", href: "/dashboard/admin/users", section: "admin" },
+        { icon: FileText, label: "Bookings", href: "/dashboard/admin/bookings", section: "admin" },
         { icon: Building2, label: "Projects", href: "/dashboard/projects", section: "main" },
         { icon: FileCheck, label: "Approvals", href: "/dashboard/admin/approvals", section: "admin" },
         { icon: BarChart3, label: "Analytics", href: "/dashboard/admin/analytics", section: "analytics" },
@@ -123,9 +124,9 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen max-h-screen bg-background">
       {/* Desktop Sidebar - Enhanced Professional Design */}
-      <aside className="hidden md:flex w-72 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 border-r border-slate-700/50 flex-col shadow-xl">
+      <aside className="hidden md:flex w-72 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 border-r border-slate-700/50 flex-col shadow-xl overflow-y-auto">
         {/* Logo Section */}
         <div className="p-6 border-b border-slate-700/50 flex items-center gap-3">
           <div className="w-11 h-11 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
@@ -286,7 +287,7 @@ export default function DashboardLayout({
         )}
 
         {/* Page Content */}
-        <main className="flex-1 overflow-auto p-4 md:p-8 bg-gradient-to-br from-slate-50 to-slate-100">{children}</main>
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-gradient-to-br from-slate-50 to-slate-100">{children}</main>
       </div>
     </div>
   )
