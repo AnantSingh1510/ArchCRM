@@ -5,13 +5,16 @@ import axios from 'axios';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check, X, User, Calendar, DollarSign, Clock, CheckCircle } from "lucide-react";
+import { Check, X, User, Calendar, DollarSign, Clock, CheckCircle, Search } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from '@/components/ui/input';
 
 export default function ApprovalsPage() {
   const [approvals, setApprovals] = useState([]);
   const [clients, setClients] = useState<any>({});
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [dateFilter, setDateFilter] = useState({ from: '', to: '' });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -39,8 +42,23 @@ export default function ApprovalsPage() {
     fetchData();
   }, []);
 
-  const pendingApprovals = approvals.filter((a: any) => a.status === 'PENDING');
-  const completedApprovals = approvals.filter((a: any) => a.status !== 'PENDING');
+  const filteredApprovals = approvals.filter((approval: any) => {
+    const clientName = clients[approval.data.clientId]?.name || '';
+    const amount = approval.data.amount?.toString() || '';
+    const fromDate = dateFilter.from ? new Date(dateFilter.from) : null;
+    const toDate = dateFilter.to ? new Date(dateFilter.to) : null;
+    const approvalDate = new Date(approval.createdAt);
+
+    return (
+      (clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        amount.includes(searchTerm)) &&
+      (!fromDate || approvalDate >= fromDate) &&
+      (!toDate || approvalDate <= toDate)
+    );
+  });
+
+  const pendingApprovals = filteredApprovals.filter((a: any) => a.status === 'PENDING');
+  const completedApprovals = filteredApprovals.filter((a: any) => a.status !== 'PENDING');
 
   const renderInvoiceDetails = (data: any) => (
     <div className="space-y-2 text-sm">
@@ -59,6 +77,34 @@ export default function ApprovalsPage() {
   return (
     <div className="w-full p-4 sm:p-6 lg:p-8">
       <h1 className="text-3xl font-bold mb-6">Approvals</h1>
+
+      <Card className="mb-6 p-4">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="relative flex-grow">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Search by client or amount..."
+              className="pl-8 w-full"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <Input
+              type="date"
+              value={dateFilter.from}
+              onChange={(e) => setDateFilter({ ...dateFilter, from: e.target.value })}
+            />
+            <span className="text-gray-500">to</span>
+            <Input
+              type="date"
+              value={dateFilter.to}
+              onChange={(e) => setDateFilter({ ...dateFilter, to: e.target.value })}
+            />
+          </div>
+        </div>
+      </Card>
 
       <Tabs defaultValue="pending">
         <TabsList>
