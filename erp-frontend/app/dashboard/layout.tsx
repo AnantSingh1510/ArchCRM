@@ -79,17 +79,6 @@ export default function DashboardLayout({
         { icon: MessageSquare, label: "Communication", href: "/dashboard/communication", section: "team" },
         { icon: Settings, label: "System Settings", href: "/dashboard/settings", section: "settings" },
       ],
-      owner: [
-        { icon: Home, label: "Dashboard", href: "/dashboard/owner", section: "main" },
-        { icon: Users, label: "Clients", href: "/dashboard/clients", section: "main" },
-        { icon: TrendingUp, label: "Approvals", href: "/dashboard/owner/approvals", section: "financial" },
-        { icon: CreditCard, label: "Financials", href: "/dashboard/financials/invoices", section: "financial" },
-        { icon: BarChart3, label: "Analytics", href: "/dashboard/owner/analytics", section: "analytics" },
-        { icon: Building2, label: "Projects", href: "/dashboard/projects", section: "main" },
-        { icon: Users, label: "Team Management", href: "/dashboard/teams", section: "team" },
-        { icon: BarChart3, label: "Billing", href: "/dashboard/billing", section: "main" },
-        { icon: FileText, label: "Reports", href: "/dashboard/reports", section: "analytics" },
-      ],
       employee: [
         { icon: Home, label: "Dashboard", href: "/dashboard/employee", section: "main" },
         { icon: FileText, label: "My Tasks", href: "/dashboard/tasks", section: "main" },
@@ -102,12 +91,6 @@ export default function DashboardLayout({
         { icon: FileText, label: "Documents", href: "/dashboard/documents", section: "main" },
       ],
       user: [
-        // { icon: Home, label: "Dashboard", href: "/dashboard", section: "main" },
-        // { icon: MapPin, label: "Properties", href: "/dashboard/real-estate/properties", section: "main" },
-        // { icon: CreditCard, label: "Invoices", href: "/dashboard/financials/payment-plans", section: "financial" },
-        // { icon: FileText, label: "Documents", href: "/dashboard/documents", section: "main" },
-        // { icon: MessageSquare, label: "Messages", href: "/dashboard/communication", section: "team" },
-
         { icon: Home, label: "Dashboard", href: "/dashboard/user-client", section: "main" },
         { icon: Building2, label: "My Properties", href: "/dashboard/user-client/properties", section: "main" },
         { icon: CreditCard, label: "My Invoices", href: "/dashboard/user-client/invoices", section: "main" },

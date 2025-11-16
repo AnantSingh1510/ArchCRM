@@ -100,7 +100,7 @@ export default function NewBookingPage() {
           axios.get('http://localhost:3000/project', { headers: { Authorization: `Bearer ${token}` } }),
           axios.get('http://localhost:3000/user', { headers: { Authorization: `Bearer ${token}` } }),
           axios.get('http://localhost:3000/property', { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get('http://localhost:3000/payment-plan', { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get('http://localhost:3000/payment-plans', { headers: { Authorization: `Bearer ${token}` } }),
         ]);
         setProjects(projectsRes.data);
         setUsers(usersRes.data);

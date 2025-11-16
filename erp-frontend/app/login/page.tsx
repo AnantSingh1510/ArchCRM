@@ -21,20 +21,17 @@ export default function LoginPage() {
   useEffect(() => {
     if (!loading && isAuthenticated && user) {
       switch (user.role) {
-        case 'admin':
+        case 'admin'.toUpperCase():
           router.push("/dashboard/admin")
           break
-        case 'owner':
-          router.push("/dashboard/owner")
-          break
-        case 'employee':
+        case 'employee'.toUpperCase():
           router.push("/dashboard/employee")
           break
-        case 'user':
+        case 'user'.toUpperCase():
           router.push("/dashboard/user-client")
           break
         default:
-          router.push("/dashboard")
+          router.push("/login")
           break
       }
     }

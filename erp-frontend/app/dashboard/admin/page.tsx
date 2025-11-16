@@ -17,18 +17,19 @@ function AdminDashboard() {
     usersThisMonth: 0,
     revenueGrowth: 0,
   });
-  const [recentActivity, setRecentActivity] = useState([]);
+  const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('auth_token');
-        const [usersRes, projectsRes, bookingsRes, paymentsRes] = await Promise.all([
+        const [usersRes, projectsRes, bookingsRes, paymentsRes, approvalsRes] = await Promise.all([
           axios.get('http://localhost:3000/user', { headers: { Authorization: `Bearer ${token}` } }),
           axios.get('http://localhost:3000/project', { headers: { Authorization: `Bearer ${token}` } }),
           axios.get('http://localhost:3000/booking', { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get('http://localhost:3000/payment', { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get('http://localhost:3000/payment/all', { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get('http://localhost:3000/approval', { headers: { Authorization: `Bearer ${token}` } }),
         ]);
 
         const users = usersRes.data;
@@ -46,17 +47,34 @@ function AdminDashboard() {
 
         setStats({
           totalUsers: users.length,
-          pendingApprovals: 12, // Placeholder
+          pendingApprovals: approvalsRes.data.filter((a: any) => a.status === 'PENDING').length,
           monthlyRevenue,
           activeProjects: projects.filter((p: any) => p.status === 'IN_PROGRESS').length,
           usersThisMonth,
           revenueGrowth: 15, // Placeholder
         });
 
-        setRecentActivity(bookings.slice(0, 4).map((b: any) => ({
-          action: `New booking for ${b.project.name}`,
-          time: `${Math.floor((new Date().getTime() - new Date(b.createdAt).getTime()) / (1000 * 60 * 60))} hours ago`,
-          status: 'neutral',
+        const combinedActivity = [
+          ...bookings.map((b: any) => ({
+            action: `New booking for ${b.project.name}`,
+            time: new Date(b.createdAt),
+            status: 'neutral',
+          })),
+          ...payments.map((p: any) => ({
+            action: `Payment of ₹${p.amount.toLocaleString()} received`,
+            time: new Date(p.date),
+            status: 'success',
+          })),
+          ...approvalsRes.data.map((a: any) => ({
+            action: `New ${a.type.toLowerCase()} approval request`,
+            time: new Date(a.createdAt),
+            status: 'neutral',
+          })),
+        ].sort((a, b) => b.time.getTime() - a.time.getTime());
+
+        setRecentActivity(combinedActivity.slice(0, 5).map(activity => ({
+          ...activity,
+          time: `${Math.floor((new Date().getTime() - activity.time.getTime()) / (1000 * 60 * 60))} hours ago`,
         })));
 
         setLoading(false);
@@ -102,7 +120,7 @@ function AdminDashboard() {
         <Card className="p-6">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">Revenue (Month)</p>
+              <p className="text-sm text-muted-foreground">Revenue (Month - Recieved online)</p>
               <DollarSign className="w-5 h-5 text-green-600" />
             </div>
             <p className="text-3xl font-bold">₹{(stats.monthlyRevenue / 100000).toFixed(1)}L</p>

@@ -9,24 +9,33 @@ import { Plus, Edit, Trash2 } from "lucide-react";
 
 export default function PaymentPlansPage() {
   const [paymentPlans, setPaymentPlans] = useState([]);
+  const [projects, setProjects] = useState<any>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchPaymentPlans = async () => {
+    const fetchData = async () => {
       try {
         const token = localStorage.getItem('auth_token');
-        const response = await axios.get('http://localhost:3000/payment-plan', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setPaymentPlans(response.data);
+        const [plansRes, projectsRes] = await Promise.all([
+          axios.get('http://localhost:3000/payment-plans', { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get('http://localhost:3000/project', { headers: { Authorization: `Bearer ${token}` } }),
+        ]);
+
+        const projectMap = projectsRes.data.reduce((acc: any, project: any) => {
+          acc[project.id] = project;
+          return acc;
+        }, {});
+
+        setPaymentPlans(plansRes.data);
+        setProjects(projectMap);
         setLoading(false);
       } catch (error) {
-        console.error('Failed to fetch payment plans:', error);
+        console.error('Failed to fetch data:', error);
         setLoading(false);
       }
     };
 
-    fetchPaymentPlans();
+    fetchData();
   }, []);
 
   return (
@@ -59,11 +68,20 @@ export default function PaymentPlansPage() {
                     }}><Trash2 className="w-4 h-4" /></Button>
                   </div>
                 </CardTitle>
+                <p className="text-sm text-gray-500">{projects[plan.projectId]?.name}</p>
               </CardHeader>
               <CardContent>
-                <pre className="bg-gray-100 p-4 rounded-md overflow-x-auto">
-                  {JSON.stringify(plan.details, null, 2)}
-                </pre>
+                <div className="space-y-2 text-sm">
+                  <p><strong>Down Payment:</strong> {plan.details.downPayment}%</p>
+                  <p><strong>Installments:</strong></p>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {plan.details.installments.map((inst: any, index: number) => (
+                      <li key={index}>
+                        <span className="font-semibold">₹{inst.amount.toLocaleString()}</span> due on <span className="font-semibold">{new Date(inst.dueDate).toLocaleDateString()}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </CardContent>
             </Card>
           ))}

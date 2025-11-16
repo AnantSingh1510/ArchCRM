@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { jwtDecode } from "jwt-decode"
-import { User } from "@/lib/auth-context"
+import { User, rolePermissions } from "@/lib/auth-context"
 
 // The decoded token will have a different shape from the User type
 interface DecodedToken {
@@ -39,7 +39,7 @@ export const useAuth = () => {
           company: decodedToken.company,
           active: decodedToken.active,
           createdAt: new Date(decodedToken.createdAt),
-          permissions: decodedToken.permissions,
+          permissions: rolePermissions[decodedToken.role.toLowerCase() as keyof typeof rolePermissions] || [],
         }
         setUser(userProfile)
         setIsAuthenticated(true)
@@ -80,7 +80,7 @@ export const useAuth = () => {
         company: decodedToken.company,
         active: decodedToken.active,
         createdAt: new Date(decodedToken.createdAt),
-        permissions: decodedToken.permissions,
+        permissions: rolePermissions[decodedToken.role.toLowerCase() as keyof typeof rolePermissions] || [],
       }
       setUser(userProfile)
       setIsAuthenticated(true)

@@ -85,7 +85,6 @@ model Task {
 enum Role {
   USER
   ADMIN
-  OWNER
   EMPLOYEE
   BROKER
 }
@@ -233,7 +232,7 @@ model Invoice {
 model Approval {
   id          String   @id @default(cuid())
   type        String
-  status      String   @default("PENDING")
+  status      ApprovalStatus @default(PENDING)
   requester   User     @relation(fields: [requesterId], references: [id])
   requesterId String
   data        Json
@@ -355,6 +354,12 @@ enum InvoiceStatus {
   APPROVED
   REJECTED
   PAID
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 model PaymentPlan {

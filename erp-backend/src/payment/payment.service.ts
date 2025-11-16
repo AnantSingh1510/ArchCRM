@@ -15,12 +15,15 @@ export class PaymentService {
       },
     });
 
-    // Update the invoice to mark it as paid
     await this.prisma.invoice.update({
       where: { id: createPaymentDto.invoiceId },
       data: { status: 'PAID' },
     });
 
     return payment;
+  }
+
+  findAll() {
+    return this.prisma.payment.findMany();
   }
 }

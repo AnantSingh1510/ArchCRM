@@ -38,12 +38,22 @@ export class ApprovalService {
   }
 
   async update(id: string, updateApprovalDto: UpdateApprovalDto) {
-    const approval = await this.prisma.approval.update({
+    const approval = await this.prisma.approval.findUnique({ where: { id } });
+
+    if (!approval) {
+      throw new Error('Approval request not found.');
+    }
+
+    if (approval.status !== 'PENDING') {
+      throw new Error('This request has already been processed.');
+    }
+
+    const updatedApproval = await this.prisma.approval.update({
       where: { id },
       data: updateApprovalDto,
     });
 
-    if (approval.status === 'APPROVED' && approval.type === 'INVOICE') {
+    if (updatedApproval.status === 'APPROVED' && updatedApproval.type === 'INVOICE') {
       const invoiceData = approval.data as any;
       await this.invoiceService.create({
         ...invoiceData,
@@ -52,7 +62,7 @@ export class ApprovalService {
       });
     }
 
-    return approval;
+    return updatedApproval;
   }
 
   remove(id: string) {

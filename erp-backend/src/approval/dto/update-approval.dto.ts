@@ -1,6 +1,8 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateApprovalDto } from './create-approval.dto';
+import { IsEnum, IsOptional } from 'class-validator';
+import { ApprovalStatus } from '@prisma/client';
 
-export class UpdateApprovalDto extends PartialType(CreateApprovalDto) {
-  status?: string;
+export class UpdateApprovalDto {
+  @IsEnum(ApprovalStatus)
+  @IsOptional()
+  status?: ApprovalStatus;
 }
