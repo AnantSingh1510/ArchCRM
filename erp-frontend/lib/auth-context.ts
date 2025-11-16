@@ -1,6 +1,4 @@
-// Role-based authentication context and utilities
-
-export type UserRole = "admin" | "owner" | "employee" | "user"
+export type UserRole = "admin" | "employee" | "user"
 
 export interface User {
   id: string
@@ -21,7 +19,6 @@ export interface Permission {
   action: "create" | "read" | "update" | "delete" | "approve"
 }
 
-// Role-based permission matrix
 export const rolePermissions: Record<UserRole, Permission[]> = {
   admin: [
     { resource: "users", action: "create" },
@@ -42,26 +39,19 @@ export const rolePermissions: Record<UserRole, Permission[]> = {
     { resource: "projects", action: "delete" },
     { resource: "reports", action: "read" },
     { resource: "analytics", action: "read" },
-  ],
-  owner: [
-    { resource: "invoices", action: "read" },
-    { resource: "invoices", action: "approve" },
-    { resource: "payments", action: "read" },
-    { resource: "payments", action: "approve" },
-    { resource: "projects", action: "read" },
-    { resource: "projects", action: "update" },
-    { resource: "reports", action: "read" },
-    { resource: "analytics", action: "read" },
-    { resource: "teams", action: "read" },
+    { resource: "communication", action: "read" },
+    { resource: "communication", action: "create" },
+    { resource: "tasks", action: "read" },
   ],
   employee: [
     { resource: "projects", action: "read" },
     { resource: "projects", action: "update" },
     { resource: "tasks", action: "read" },
     { resource: "tasks", action: "update" },
-    { resource: "teams", action: "read" },
     { resource: "documents", action: "read" },
     { resource: "documents", action: "create" },
+    { resource: "communication", action: "read" },
+    { resource: "communication", action: "create" },
   ],
   user: [
     { resource: "projects", action: "read" },
@@ -70,7 +60,9 @@ export const rolePermissions: Record<UserRole, Permission[]> = {
   ],
 }
 
-// Check if user has permission
 export function hasPermission(user: User, resource: string, action: Permission["action"]): boolean {
+  if (user.role === 'admin') {
+    return true;
+  }
   return user.permissions.some((p) => p.resource === resource && p.action === action)
 }

@@ -202,4 +202,4 @@ function AdminDashboard() {
   )
 }
 
-export default withRole("admin")(AdminDashboard)
+export default withRole("analytics", "read")(AdminDashboard)

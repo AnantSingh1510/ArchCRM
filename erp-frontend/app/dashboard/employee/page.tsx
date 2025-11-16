@@ -214,4 +214,4 @@ function EmployeeDashboard() {
   )
 }
 
-export default withRole("employee")(EmployeeDashboard)
+export default withRole("tasks", "read")(EmployeeDashboard)

@@ -359,48 +359,9 @@ export default function BillingPage() {
                         Mark as Paid
                       </Button>
                     )}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={async (e) => {
-                        e.stopPropagation();
-                        try {
-                          const token = localStorage.getItem("auth_token");
-                          await fetch("http://localhost:3000/approval", {
-                            method: "POST",
-                            headers: {
-                              "Content-Type": "application/json",
-                              Authorization: `Bearer ${token}`,
-                            },
-                            body: JSON.stringify({
-                              type: "invoice",
-                              data: invoice,
-                            }),
-                          });
-                        } catch (error) {
-                          setError("Failed to raise for approval");
-                        }
-                      }}
-                      className="flex-1 gap-2"
-                    >
-                      <CheckCircle className="w-4 h-4" />
-                      Raise for Approval
-                    </Button>
                     <Button variant="outline" size="sm" className="flex-1 gap-2 bg-transparent">
                       <Download className="w-4 h-4" />
                       Download
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        deleteInvoice(invoice.id)
-                      }}
-                      className="flex-1 gap-2 text-destructive hover:bg-destructive/10"
-                    >
-                      <X className="w-4 h-4" />
-                      Delete
                     </Button>
                   </div>
                 </div>

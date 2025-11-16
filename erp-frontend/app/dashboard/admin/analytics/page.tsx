@@ -271,4 +271,4 @@ function AnalyticsPage() {
   )
 }
 
-export default withRole("admin")(AnalyticsPage)
+export default withRole("analytics", "read")(AnalyticsPage)

@@ -76,6 +76,7 @@ export default function DashboardLayout({
         { icon: CreditCard, label: "Financial", href: "/dashboard/financials/invoices", section: "financial" },
         { icon: FileText, label: "Reports", href: "/dashboard/reports", section: "analytics" },
         { icon: BarChart3, label: "Billing", href: "/dashboard/billing", section: "main" },
+        { icon: MessageSquare, label: "Communication", href: "/dashboard/communication", section: "team" },
         { icon: Settings, label: "System Settings", href: "/dashboard/settings", section: "settings" },
       ],
       owner: [

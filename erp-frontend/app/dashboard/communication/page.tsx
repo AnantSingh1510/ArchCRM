@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Mail, MessageCircle, Send, Globe } from "lucide-react"
 import type { Communication } from "@/lib/types"
+import withRole from "@/components/withRole"
 
-export default function CommunicationPage() {
+function CommunicationPage() {
   const [communications, setCommunications] = useState<Communication[]>([
     {
       id: "msg-1",
@@ -340,3 +341,5 @@ export default function CommunicationPage() {
     </div>
   )
 }
+
+export default withRole("communication", "read")(CommunicationPage)
