@@ -2,9 +2,10 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { useAuthContext } from "@/context/auth-context"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -19,6 +20,13 @@ export default function RegisterPage() {
   })
   const [error, setError] = useState("")
   const router = useRouter()
+  const { isAuthenticated, loading } = useAuthContext()
+
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      router.push("/dashboard")
+    }
+  }, [isAuthenticated, loading, router])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })

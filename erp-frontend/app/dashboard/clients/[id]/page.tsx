@@ -26,6 +26,7 @@ import {
   Briefcase,
   Home,
 } from "lucide-react"
+import { useAuthContext } from "@/context/auth-context"
 
 interface Document {
   id: string
@@ -75,6 +76,7 @@ export default function ClientDetailsPage({ params }: { params: Promise<{ id: st
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const { token } = useAuthContext();
 
   // Unwrap params first
   useEffect(() => {
@@ -88,7 +90,6 @@ export default function ClientDetailsPage({ params }: { params: Promise<{ id: st
 
     const fetchClient = async () => {
       try {
-        const token = localStorage.getItem("auth_token");
         const res = await fetch(`http://localhost:3000/client/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,

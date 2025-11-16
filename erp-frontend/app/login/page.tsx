@@ -2,9 +2,10 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { useAuthContext } from "@/context/auth-context"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -15,6 +16,29 @@ export default function LoginPage() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const router = useRouter()
+  const { user, isAuthenticated, loading, login } = useAuthContext()
+
+  useEffect(() => {
+    if (!loading && isAuthenticated && user) {
+      switch (user.role) {
+        case 'admin':
+          router.push("/dashboard/admin")
+          break
+        case 'owner':
+          router.push("/dashboard/owner")
+          break
+        case 'employee':
+          router.push("/dashboard/employee")
+          break
+        case 'user':
+          router.push("/dashboard/user-client")
+          break
+        default:
+          router.push("/dashboard")
+          break
+      }
+    }
+  }, [isAuthenticated, loading, router, user])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -36,13 +60,7 @@ export default function LoginPage() {
 
       if (res.ok) {
         const data = await res.json()
-        localStorage.setItem("auth_token", data.access_token)
-        const payload = JSON.parse(atob(data.access_token.split('.')[1]))
-        if (payload.role === 'USER') {
-          router.push("/dashboard/user-client")
-        } else {
-          router.push("/dashboard")
-        }
+        login(data.access_token)
       } else {
         const errorData = await res.json()
         setError(errorData.message || "Invalid email or password")

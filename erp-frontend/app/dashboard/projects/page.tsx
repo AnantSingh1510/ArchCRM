@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Plus, MoreVertical, MapPin, Users, Search } from "lucide-react"
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import { useAuthContext } from "@/context/auth-context"
 import { Input } from "@/components/ui/input"
 import {
   DropdownMenu,
@@ -43,11 +44,12 @@ export default function ProjectsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null)
   const router = useRouter()
+  const { token } = useAuthContext()
 
   useEffect(() => {
     const fetchProjects = async () => {
+      if (!token) return
       try {
-        const token = localStorage.getItem("auth_token")
         const res = await fetch("http://localhost:3000/project", {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -65,7 +67,7 @@ export default function ProjectsPage() {
     }
 
     fetchProjects()
-  }, [])
+  }, [token])
 
   const handleDeleteClick = (project: Project, e: React.MouseEvent) => {
     e.preventDefault()
@@ -75,10 +77,9 @@ export default function ProjectsPage() {
   }
 
   const handleDelete = async () => {
-    if (!projectToDelete) return
+    if (!projectToDelete || !token) return
 
     try {
-      const token = localStorage.getItem("auth_token")
       const res = await fetch(`http://localhost:3000/project/${projectToDelete.id}`, {
         method: "DELETE",
         headers: {

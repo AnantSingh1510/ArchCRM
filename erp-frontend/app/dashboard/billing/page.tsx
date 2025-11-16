@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Link from "next/link"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -189,10 +190,12 @@ export default function BillingPage() {
           <h1 className="text-3xl font-bold">Billing</h1>
           <p className="text-muted-foreground">Manage invoices and track payments</p>
         </div>
-        <Button onClick={() => setShowForm(true)} className="gap-2">
-          <Plus className="w-4 h-4" />
-          New Invoice
-        </Button>
+        <Link href="/dashboard/billing/new">
+          <Button className="gap-2">
+            <Plus className="w-4 h-4" />
+            New Invoice
+          </Button>
+        </Link>
       </div>
 
       {/* Add Invoice Form */}
@@ -275,7 +278,7 @@ export default function BillingPage() {
             <p className="text-xs font-medium text-blue-700">Paid</p>
             <DollarSign className="w-4 h-4 text-blue-600" />
           </div>
-          <p className="text-3xl font-bold text-blue-900">${paidAmount.toLocaleString()}</p>
+          <p className="text-3xl font-bold text-blue-900">₹{paidAmount.toLocaleString()}</p>
           <p className="text-xs text-blue-700 mt-2">{invoices.filter((i) => i.status === "PAID").length} paid</p>
         </Card>
         <Card className="p-6 bg-gradient-to-br from-orange-50 to-orange-100/50 border-orange-200">

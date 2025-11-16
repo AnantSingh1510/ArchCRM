@@ -6,18 +6,18 @@ import { Button } from "../../../components/ui/button"
 import { ArrowLeft, Mail, Phone, MapPin, FileText, Download, Eye, Trash2, Plus, Calendar, Edit, Building2, Tag } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { useAuthContext } from "../../../context/auth-context"
 
 export default function ClientPortalPage() {
   const [client, setClient] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
+  const { token } = useAuthContext()
 
   useEffect(() => {
     const fetchClient = async () => {
-      try {
-        const token = localStorage.getItem("auth_token")
-        
+      try {        
         if (!token) {
           setError("Please log in.")
           setLoading(false)

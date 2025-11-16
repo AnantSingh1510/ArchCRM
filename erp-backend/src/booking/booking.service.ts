@@ -19,6 +19,7 @@ export class BookingService {
       propertyId,
       salesEmployeeId,
       brokerId,
+      paymentPlanId,
       companyDiscount,
       brokerDiscount,
       ...bookingData
@@ -45,6 +46,7 @@ export class BookingService {
       project: { connect: { id: projectId } },
       property: { connect: { id: propertyId } },
       salesEmployee: { connect: { id: salesEmployeeId } },
+      paymentPlan: { connect: { id: paymentPlanId } },
     };
 
     if (brokerId) {

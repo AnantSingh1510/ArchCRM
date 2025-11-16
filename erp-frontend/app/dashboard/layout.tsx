@@ -4,7 +4,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter, usePathname } from "next/navigation"
-import { useAuth } from "@/hooks/use-auth"
+import { useAuthContext } from "@/context/auth-context"
 import {
   Building2,
   FileText,
@@ -21,6 +21,7 @@ import {
   FileCheck,
   MapPin,
   MessageSquare,
+  DollarSign,
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -41,7 +42,7 @@ export default function DashboardLayout({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
-  const { user, logout: authLogout } = useAuth()
+  const { user, logout: authLogout } = useAuthContext()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -63,10 +64,12 @@ export default function DashboardLayout({
 
     const roleSpecificItems: Record<UserRole, typeof baseItems> = {
       admin: [
-        { icon: Home, label: "Dashboard", href: "/dashboard", section: "main" },
+        { icon: Home, label: "Dashboard", href: "/dashboard/admin", section: "main" },
         { icon: Users, label: "Clients", href: "/dashboard/clients", section: "main" },
         { icon: Users, label: "User Management", href: "/dashboard/admin/users", section: "admin" },
+        { icon: Users, label: "Brokers", href: "/dashboard/admin/users?role=BROKER", section: "admin" },
         { icon: FileText, label: "Bookings", href: "/dashboard/admin/bookings", section: "admin" },
+        { icon: DollarSign, label: "Payment Plans", href: "/dashboard/admin/payment-plans", section: "admin" },
         { icon: Building2, label: "Projects", href: "/dashboard/projects", section: "main" },
         { icon: FileCheck, label: "Approvals", href: "/dashboard/admin/approvals", section: "admin" },
         { icon: BarChart3, label: "Analytics", href: "/dashboard/admin/analytics", section: "analytics" },
@@ -76,7 +79,7 @@ export default function DashboardLayout({
         { icon: Settings, label: "System Settings", href: "/dashboard/settings", section: "settings" },
       ],
       owner: [
-        { icon: Home, label: "Dashboard", href: "/dashboard", section: "main" },
+        { icon: Home, label: "Dashboard", href: "/dashboard/owner", section: "main" },
         { icon: Users, label: "Clients", href: "/dashboard/clients", section: "main" },
         { icon: TrendingUp, label: "Approvals", href: "/dashboard/owner/approvals", section: "financial" },
         { icon: CreditCard, label: "Financials", href: "/dashboard/financials/invoices", section: "financial" },
@@ -87,7 +90,7 @@ export default function DashboardLayout({
         { icon: FileText, label: "Reports", href: "/dashboard/reports", section: "analytics" },
       ],
       employee: [
-        { icon: Home, label: "Dashboard", href: "/dashboard", section: "main" },
+        { icon: Home, label: "Dashboard", href: "/dashboard/employee", section: "main" },
         { icon: FileText, label: "My Tasks", href: "/dashboard/tasks", section: "main" },
         { icon: Users, label: "Clients", href: "/dashboard/clients", section: "main" },
         { icon: Building2, label: "Projects", href: "/dashboard/projects", section: "main" },
@@ -98,35 +101,38 @@ export default function DashboardLayout({
         { icon: FileText, label: "Documents", href: "/dashboard/documents", section: "main" },
       ],
       user: [
-        { icon: Home, label: "Dashboard", href: "/dashboard", section: "main" },
-        { icon: MapPin, label: "Properties", href: "/dashboard/real-estate/properties", section: "main" },
-        { icon: CreditCard, label: "Invoices", href: "/dashboard/financials/payment-plans", section: "financial" },
-        { icon: FileText, label: "Documents", href: "/dashboard/documents", section: "main" },
-        { icon: MessageSquare, label: "Messages", href: "/dashboard/communication", section: "team" },
+        // { icon: Home, label: "Dashboard", href: "/dashboard", section: "main" },
+        // { icon: MapPin, label: "Properties", href: "/dashboard/real-estate/properties", section: "main" },
+        // { icon: CreditCard, label: "Invoices", href: "/dashboard/financials/payment-plans", section: "financial" },
+        // { icon: FileText, label: "Documents", href: "/dashboard/documents", section: "main" },
+        // { icon: MessageSquare, label: "Messages", href: "/dashboard/communication", section: "team" },
+
+        { icon: Home, label: "Dashboard", href: "/dashboard/user-client", section: "main" },
+        { icon: Building2, label: "My Properties", href: "/dashboard/user-client/properties", section: "main" },
+        { icon: CreditCard, label: "My Invoices", href: "/dashboard/user-client/invoices", section: "main" },
+        { icon: MessageSquare, label: "Messages", href: "/dashboard/user-client/communications", section: "main" },
+        { icon: FileText, label: "My Documents", href: "/dashboard/user-client/my-documents", section: "main" },
+        { icon: BarChart3, label: "Payment Details", href: "/dashboard/user-client/payment-details", section: "main" },
+        { icon: CreditCard, label: "Make a Payment", href: "/dashboard/user-client/make-payment", section: "main" },
       ],
     }
 
     return role ? roleSpecificItems[role] : baseItems
   }
 
-  const navItems = getNavItems(user?.role.toLowerCase() as UserRole)
+  const navItems = getNavItems(user?.role?.toLowerCase() as UserRole)
 
   const isActive = (href: string) => {
-    if (href === "/dashboard" && pathname === "/dashboard") return true
-    if (href !== "/dashboard" && pathname.startsWith(href)) return true
-    return false
+    // Exact match for all paths
+    return pathname === href
   }
 
   if (!mounted) return null
 
-  if (user?.role.toLowerCase() === 'user') {
-    return <>{children}</>
-  }
-
   return (
     <div className="flex h-screen max-h-screen bg-background">
       {/* Desktop Sidebar - Enhanced Professional Design */}
-      <aside className="hidden md:flex w-72 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 border-r border-slate-700/50 flex-col shadow-xl overflow-y-auto">
+      <aside className="hidden md:flex w-72 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 border-r border-slate-700/50 flex-col shadow-xl">
         {/* Logo Section */}
         <div className="p-6 border-b border-slate-700/50 flex items-center gap-3">
           <div className="w-11 h-11 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
@@ -139,7 +145,7 @@ export default function DashboardLayout({
         </div>
 
         {/* Navigation Sections */}
-        <nav className="flex-1 p-4 space-y-6 overflow-y-auto">
+        <nav className="flex-1 p-4 space-y-6">
           {/* Group navigation by section */}
           {["main", "admin", "financial", "analytics", "team", "settings"].map((section) => {
             const sectionItems = (navItems || []).filter((item) => item.section === section)

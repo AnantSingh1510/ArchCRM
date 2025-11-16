@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
+import { useAuthContext } from "@/context/auth-context"
 import { Card } from "@/components/ui/card"
 import { Tag, Calendar, Users, Image as ImageIcon, ChevronsUpDown } from "lucide-react"
 import BackButton from "@/components/BackButton"
@@ -32,13 +33,13 @@ export default function ProjectDetailsPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
+  const { token } = useAuthContext()
 
   useEffect(() => {
     if (!id) return
 
     const fetchProjectDetails = async () => {
       try {
-        const token = localStorage.getItem("auth_token")
         const res = await fetch(`http://localhost:3000/project/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,

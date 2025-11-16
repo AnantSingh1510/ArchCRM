@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/use-auth';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +16,7 @@ export default function NewBookingPage() {
   const [projects, setProjects] = useState([]);
   const [users, setUsers] = useState([]);
   const [properties, setProperties] = useState([]);
+  const [paymentPlans, setPaymentPlans] = useState([]);
   const [formData, setFormData] = useState({
     // Unit Information
     unitHolderType: 'INDIVIDUAL',
@@ -29,7 +29,7 @@ export default function NewBookingPage() {
     tower: '',
     floor: '',
     unitNo: '',
-    paymentPlan: '',
+    paymentPlanId: '',
     applicationDate: new Date().toISOString().split('T')[0],
     basicPrice: '',
     formNo: '',
@@ -96,14 +96,16 @@ export default function NewBookingPage() {
       const token = localStorage.getItem('auth_token');
       if (!token) return;
       try {
-        const [projectsRes, usersRes, propertiesRes] = await Promise.all([
+        const [projectsRes, usersRes, propertiesRes, paymentPlansRes] = await Promise.all([
           axios.get('http://localhost:3000/project', { headers: { Authorization: `Bearer ${token}` } }),
           axios.get('http://localhost:3000/user', { headers: { Authorization: `Bearer ${token}` } }),
           axios.get('http://localhost:3000/property', { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get('http://localhost:3000/payment-plan', { headers: { Authorization: `Bearer ${token}` } }),
         ]);
         setProjects(projectsRes.data);
         setUsers(usersRes.data);
         setProperties(propertiesRes.data);
+        setPaymentPlans(paymentPlansRes.data);
       } catch (error) {
         console.error('Failed to fetch data for form:', error);
       }
@@ -139,11 +141,11 @@ export default function NewBookingPage() {
   };
 
   return (
-    <div className="w-full p-4 sm:p-6 lg:p-8">
-      <h1 className="text-3xl font-bold mb-6">New Unit Booking</h1>
-      <form onSubmit={handleSubmit} className="space-y-8">
-        
-        {/* Unit Information */}
+    <main className="flex flex-col h-screen overflow-hidden">
+      <div className="flex-grow overflow-y-auto p-4 sm:p-6 lg:p-8">
+        <h1 className="text-3xl font-bold mb-6">New Unit Booking</h1>
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Unit Information */}
         <Card>
           <CardHeader><CardTitle>Unit Information</CardTitle></CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -151,13 +153,13 @@ export default function NewBookingPage() {
             <div className="space-y-2"><Label>Project*</Label><Select name="projectId" onValueChange={(v) => handleSelectChange('projectId', v)}><SelectTrigger><SelectValue placeholder="--Select--" /></SelectTrigger><SelectContent>{projects.map((p: any) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select></div>
             <div className="space-y-2"><Label>Unit Type*</Label><Select name="unitType" onValueChange={(v) => handleSelectChange('unitType', v)}><SelectTrigger><SelectValue placeholder="--Select--" /></SelectTrigger><SelectContent><SelectItem value="RESIDENTIAL">Residential</SelectItem><SelectItem value="COMMERCIAL">Commercial</SelectItem></SelectContent></Select></div>
             <div className="space-y-2"><Label>Customer Classification</Label><RadioGroup defaultValue="DIRECT" onValueChange={(v) => handleSelectChange('customerClassification', v)}><div className="flex items-center space-x-2"><RadioGroupItem value="BROKER" id="broker" /><Label htmlFor="broker">Broker</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="DIRECT" id="direct" /><Label htmlFor="direct">Direct</Label></div></RadioGroup></div>
-            <div className="space-y-2"><Label>Broker*</Label><Select name="brokerId" onValueChange={(v) => handleSelectChange('brokerId', v)}><SelectTrigger><SelectValue placeholder="--Select--" /></SelectTrigger><SelectContent>{users.map((u: any) => <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>)}</SelectContent></Select></div>
-            <div className="space-y-2"><Label>Main Broker</Label><Select name="mainBrokerId" onValueChange={(v) => handleSelectChange('mainBrokerId', v)}><SelectTrigger><SelectValue placeholder="--Select--" /></SelectTrigger><SelectContent>{users.map((u: any) => <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>)}</SelectContent></Select></div>
+            <div className="space-y-2"><Label>Broker*</Label><Select name="brokerId" onValueChange={(v) => handleSelectChange('brokerId', v)}><SelectTrigger><SelectValue placeholder="--Select--" /></SelectTrigger><SelectContent>{users.filter((u: any) => u.role === 'BROKER').map((u: any) => <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>)}</SelectContent></Select></div>
+            <div className="space-y-2"><Label>Main Broker</Label><Select name="mainBrokerId" onValueChange={(v) => handleSelectChange('mainBrokerId', v)}><SelectTrigger><SelectValue placeholder="--Select--" /></SelectTrigger><SelectContent>{users.filter((u: any) => u.role === 'BROKER').map((u: any) => <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>)}</SelectContent></Select></div>
             <div className="space-y-2 col-span-2"><Label>Booking Type</Label><RadioGroup defaultValue="NORMAL" onValueChange={(v) => handleSelectChange('bookingType', v)} className="flex space-x-4"><div className="flex items-center space-x-2"><RadioGroupItem value="NORMAL" id="normal" /><Label htmlFor="normal">Normal Booking</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="HOLD" id="hold" /><Label htmlFor="hold">Hold Unit</Label></div></RadioGroup></div>
             <div className="space-y-2"><Label>Tower</Label><Select name="tower" onValueChange={(v) => handleSelectChange('tower', v)}><SelectTrigger><SelectValue placeholder="--Select--" /></SelectTrigger><SelectContent>{[...new Set(properties.map((p: any) => p.tower))].map((tower: any) => <SelectItem key={tower} value={tower}>{tower}</SelectItem>)}</SelectContent></Select></div>
             <div className="space-y-2"><Label>Floor</Label><Select name="floor" onValueChange={(v) => handleSelectChange('floor', v)}><SelectTrigger><SelectValue placeholder="--Select--" /></SelectTrigger><SelectContent>{[...new Set(properties.map((p: any) => p.floor))].map((floor: any) => <SelectItem key={floor} value={floor}>{floor}</SelectItem>)}</SelectContent></Select></div>
             <div className="space-y-2"><Label>Unit No.</Label><Select name="unitNo" onValueChange={(v) => handleSelectChange('unitNo', v)}><SelectTrigger><SelectValue placeholder="--Select--" /></SelectTrigger><SelectContent>{properties.map((p: any) => <SelectItem key={p.id} value={p.id}>{p.unitNumber}</SelectItem>)}</SelectContent></Select></div>
-            <div className="space-y-2"><Label>Payment Plan*</Label><Select name="paymentPlan" onValueChange={(v) => handleSelectChange('paymentPlan', v)}><SelectTrigger><SelectValue placeholder="--Select--" /></SelectTrigger><SelectContent></SelectContent></Select></div>
+            <div className="space-y-2"><Label>Payment Plan*</Label><Select name="paymentPlan" onValueChange={(v) => handleSelectChange('paymentPlanId', v)}><SelectTrigger><SelectValue placeholder="--Select--" /></SelectTrigger><SelectContent>{paymentPlans.map((p: any) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select></div>
             <div className="space-y-2"><Label>Application Date*</Label><Input type="date" name="applicationDate" value={formData.applicationDate} onChange={handleChange} /></div>
             <div className="space-y-2"><Label>Basic Price*</Label><Input name="basicPrice" value={formData.basicPrice} onChange={handleChange} /></div>
             <div className="space-y-2"><Label>Form No.</Label><Input name="formNo" value={formData.formNo} onChange={handleChange} /></div>
@@ -204,14 +206,14 @@ export default function NewBookingPage() {
             <div className="space-y-2"><Label>PAN No.</Label><Input name="applicantPanNo" onChange={handleChange} /></div>
             <div className="space-y-2"><Label>E-mail Id-1</Label><Input type="email" name="applicantEmail1" onChange={handleChange} /></div>
             <div className="space-y-2"><Label>E-mail Id-2</Label><Input type="email" name="applicantEmail2" onChange={handleChange} /></div>
-            <div className="space-y-2"><Label>Profession</Label><Select><SelectTrigger><SelectValue placeholder="--Select--" /></SelectTrigger><SelectContent></SelectContent></Select></div>
+            <div className="space-y-2"><Label>Profession</Label><Select><SelectTrigger><SelectValue placeholder="--Select--" /></SelectTrigger><SelectContent><SelectItem value="salaried">Salaried</SelectItem><SelectItem value="business">Business</SelectItem></SelectContent></Select></div>
             <div className="space-y-2"><Label>Designation</Label><Input name="applicantDesignation" onChange={handleChange} /></div>
             <div className="space-y-2"><Label>Company/Firm</Label><Input name="applicantCompany" onChange={handleChange} /></div>
             <div className="space-y-2"><Label>Aadhaar No.</Label><Input name="applicantAadhaarNo" onChange={handleChange} /></div>
             <div className="space-y-2"><Label>Account Name</Label><Input name="applicantAccountName" onChange={handleChange} /></div>
             <div className="space-y-2"><Label>Account No.</Label><Input name="applicantAccountNo" onChange={handleChange} /></div>
             <div className="space-y-2"><Label>IFSC Code</Label><Input name="applicantIfsc" onChange={handleChange} /></div>
-            <div className="space-y-2"><Label>Bank</Label><Select><SelectTrigger><SelectValue placeholder="--Select--" /></SelectTrigger><SelectContent></SelectContent></Select></div>
+            <div className="space-y-2"><Label>Bank</Label><Select><SelectTrigger><SelectValue placeholder="--Select--" /></SelectTrigger><SelectContent><SelectItem value="bank1">Bank 1</SelectItem><SelectItem value="bank2">Bank 2</SelectItem></SelectContent></Select></div>
             <div className="space-y-2"><Label>Branch</Label><Input name="applicantBranch" onChange={handleChange} /></div>
             <div className="space-y-2"><Label>Attach Photo</Label><Input type="file" /></div>
           </CardContent>
@@ -221,7 +223,7 @@ export default function NewBookingPage() {
         <Card>
           <CardHeader><CardTitle>First Applicant Address</CardTitle></CardHeader>
           <CardContent className="space-y-6">
-            <div><CardDescription>Present Address</CardDescription><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-2"><div className="space-y-2 col-span-2"><Label>Address*</Label><Input name="presentAddress" onChange={handleChange} /></div><div className="space-y-2"><Label>Pin Code</Label><Input name="presentPinCode" onChange={handleChange} /></div><div className="space-y-2"><Label>Country</Label><Input name="presentCountry" value="India" disabled /></div><div className="space-y-2"><Label>State</Label><Select><SelectTrigger><SelectValue placeholder="--Select--" /></SelectTrigger><SelectContent></SelectContent></Select></div><div className="space-y-2"><Label>City</Label><Select><SelectTrigger><SelectValue placeholder="--Select--" /></SelectTrigger><SelectContent></SelectContent></Select></div><div className="space-y-2"><Label>1st Mobile No.</Label><Input name="presentMobile1" onChange={handleChange} /></div><div className="space-y-2"><Label>2nd Mobile No.</Label><Input name="presentMobile2" onChange={handleChange} /></div></div></div>
+            <div><CardDescription>Present Address</CardDescription><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-2"><div className="space-y-2 col-span-2"><Label>Address*</Label><Input name="presentAddress" onChange={handleChange} /></div><div className="space-y-2"><Label>Pin Code</Label><Input name="presentPinCode" onChange={handleChange} /></div><div className="space-y-2"><Label>Country</Label><Input name="presentCountry" value="India" disabled /></div><div className="space-y-2"><Label>State</Label><Select><SelectTrigger><SelectValue placeholder="--Select--" /></SelectTrigger><SelectContent><SelectItem value="state1">State 1</SelectItem><SelectItem value="state2">State 2</SelectItem></SelectContent></Select></div><div className="space-y-2"><Label>City</Label><Select><SelectTrigger><SelectValue placeholder="--Select--" /></SelectTrigger><SelectContent><SelectItem value="city1">City 1</SelectItem><SelectItem value="city2">City 2</SelectItem></SelectContent></Select></div><div className="space-y-2"><Label>1st Mobile No.</Label><Input name="presentMobile1" onChange={handleChange} /></div><div className="space-y-2"><Label>2nd Mobile No.</Label><Input name="presentMobile2" onChange={handleChange} /></div></div></div>
             <div><div className="flex items-center space-x-2"><Checkbox id="fillOfficeAddress" name="fillOfficeAddress" onCheckedChange={(c) => handleSelectChange('fillOfficeAddress', c.toString())} /><label htmlFor="fillOfficeAddress">Office Address</label></div>{formData.fillOfficeAddress && <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-2"><div className="space-y-2 col-span-2"><Label>Address</Label><Input name="officeAddress" onChange={handleChange} /></div><div className="space-y-2"><Label>Pin Code</Label><Input name="officePinCode" onChange={handleChange} /></div><div className="space-y-2"><Label>Country</Label><Input name="officeCountry" value="India" disabled /></div><div className="space-y-2"><Label>State</Label><Select><SelectTrigger><SelectValue placeholder="--Select--" /></SelectTrigger><SelectContent></SelectContent></Select></div><div className="space-y-2"><Label>City</Label><Select><SelectTrigger><SelectValue placeholder="--Select--" /></SelectTrigger><SelectContent></SelectContent></Select></div><div className="space-y-2"><Label>1st Mobile No.</Label><Input name="officeMobile1" onChange={handleChange} /></div><div className="space-y-2"><Label>2nd Mobile No.</Label><Input name="officeMobile2" onChange={handleChange} /></div></div>}</div>
             <div><div className="flex items-center space-x-2"><Checkbox id="fillPermanentAddress" name="fillPermanentAddress" onCheckedChange={(c) => handleSelectChange('fillPermanentAddress', c.toString())} /><label htmlFor="fillPermanentAddress">Permanent Address</label></div>{formData.fillPermanentAddress && <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-2"><div className="space-y-2 col-span-2"><Label>Address</Label><Input name="permanentAddress" onChange={handleChange} /></div><div className="space-y-2"><Label>Pin Code</Label><Input name="permanentPinCode" onChange={handleChange} /></div><div className="space-y-2"><Label>Country</Label><Input name="permanentCountry" value="India" disabled /></div><div className="space-y-2"><Label>State</Label><Select><SelectTrigger><SelectValue placeholder="--Select--" /></SelectTrigger><SelectContent></SelectContent></Select></div><div className="space-y-2"><Label>City</Label><Select><SelectTrigger><SelectValue placeholder="--Select--" /></SelectTrigger><SelectContent></SelectContent></Select></div><div className="space-y-2"><Label>1st Mobile No.</Label><Input name="permanentMobile1" onChange={handleChange} /></div><div className="space-y-2"><Label>2nd Mobile No.</Label><Input name="permanentMobile2" onChange={handleChange} /></div></div>}</div>
             <div className="space-y-2"><Label>Mailing Address</Label><RadioGroup defaultValue="PRESENT" onValueChange={(v) => handleSelectChange('mailingAddress', v)} className="flex space-x-4"><RadioGroupItem value="PRESENT" id="p" /><Label htmlFor="p">Present</Label><RadioGroupItem value="OFFICE" id="o" /><Label htmlFor="o">Office</Label><RadioGroupItem value="PERMANENT" id="perm" /><Label htmlFor="perm">Permanent</Label></RadioGroup></div>
@@ -243,7 +245,8 @@ export default function NewBookingPage() {
         <div className="flex justify-end">
           <Button type="submit" size="lg">Create Booking</Button>
         </div>
-      </form>
-    </div>
+        </form>
+      </div>
+    </main>
   );
 }

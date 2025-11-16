@@ -1,10 +1,12 @@
 import { Controller, Post, Body, UseGuards, Get, Param } from '@nestjs/common';
 import { PropertyService } from './property.service';
 import { CreatePropertyDto } from './dto/create-property.dto';
-import { AuthGuard } from '@nestjs/passport';
+import { AuthGuard } from '@nestjs/passport';;
+import { ApiBearerAuth } from '@nestjs/swagger';
 
-@Controller('property')
+@ApiBearerAuth()
 @UseGuards(AuthGuard('jwt'))
+@Controller('property')
 export class PropertyController {
   constructor(private readonly propertyService: PropertyService) {}
 

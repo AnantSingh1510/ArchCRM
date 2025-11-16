@@ -1,15 +1,19 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
 import { ApprovalService } from './approval.service';
 import { CreateApprovalDto } from './dto/create-approval.dto';
 import { UpdateApprovalDto } from './dto/update-approval.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
 
+@ApiBearerAuth()
+@UseGuards(AuthGuard('jwt'))
 @Controller('approval')
 export class ApprovalController {
   constructor(private readonly approvalService: ApprovalService) {}
 
   @Post()
-  create(@Body() createApprovalDto: CreateApprovalDto) {
-    return this.approvalService.create(createApprovalDto);
+  create(@Body() createApprovalDto: CreateApprovalDto, @Req() req) {
+    return this.approvalService.create(createApprovalDto, req.user.id);
   }
 
   @Get()

@@ -3,7 +3,7 @@
 import { Card } from "@/components/ui/card"
 import { useEffect, useState } from "react"
 import { Building2, MapPin, Tag } from "lucide-react"
-import { useAuth } from "@/hooks/use-auth"
+import { useAuthContext } from "@/context/auth-context"
 import Link from "next/link"
 import Image from "next/image"
 
@@ -20,22 +20,16 @@ interface Property {
 }
 
 export default function PropertiesPage() {
-  const { user, loading } = useAuth()
+  const { user, loading, token } = useAuthContext()
   const [properties, setProperties] = useState<Property[]>([])
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (loading) return
-
-    if (!user) {
-      setError("User not found. Please log in again.")
-      return
-    }
+    if (loading || !token || !user) return
 
     const fetchProperties = async () => {
       try {
-        const token = localStorage.getItem("auth_token")
-        const res = await fetch(`http://localhost:3000/property/user/${user.sub}`, {
+        const res = await fetch(`http://localhost:3000/property/user/${user.id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -53,7 +47,7 @@ export default function PropertiesPage() {
     }
 
     fetchProperties()
-  }, [user, loading])
+  }, [user, loading, token])
 
   if (loading) {
     return <p>Loading...</p>

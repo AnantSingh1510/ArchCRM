@@ -19,15 +19,21 @@ import {
 import { Card } from "@/components/ui/card"
 import { BarChart3, TrendingUp, Users, FileText, AlertCircle, Calendar } from "lucide-react"
 import withRole from "@/components/withRole"
+import { useAuthContext } from "@/context/auth-context"
 
 function AnalyticsPage() {
   const [data, setData] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
+  const { token } = useAuthContext();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch("http://localhost:3000/analytics/dashboard")
+        const res = await fetch("http://localhost:3000/analytics/dashboard", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+      })
         if (res.ok) {
           const data = await res.json()
           setData(data)

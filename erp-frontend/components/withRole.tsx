@@ -1,12 +1,12 @@
 "use client";
 
-import { useAuth } from '@/hooks/use-auth';
+import { useAuthContext } from '@/context/auth-context';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 const withRole = (role: string) => <P extends object>(WrappedComponent: React.ComponentType<P>) => {
   const Wrapper = (props: P) => {
-    const { user, loading } = useAuth();
+const { user, loading } = useAuthContext();
     const router = useRouter();
 
     useEffect(() => {

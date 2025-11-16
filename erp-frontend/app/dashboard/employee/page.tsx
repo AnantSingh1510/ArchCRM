@@ -4,8 +4,9 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Calendar, CheckCircle, Clock, Users, MessageSquare, Target } from "lucide-react"
 import Link from "next/link"
+import withRole from "@/components/withRole"
 
-export default function EmployeeDashboard() {
+function EmployeeDashboard() {
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -212,3 +213,5 @@ export default function EmployeeDashboard() {
     </div>
   )
 }
+
+export default withRole("employee")(EmployeeDashboard)

@@ -1,11 +1,74 @@
 "use client"
 
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { BarChart3, Users, AlertCircle, CheckCircle2, DollarSign, TrendingUp, Settings } from "lucide-react"
 import Link from "next/link"
+import withRole from "@/components/withRole"
 
-export default function AdminDashboard() {
+function AdminDashboard() {
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    pendingApprovals: 0,
+    monthlyRevenue: 0,
+    activeProjects: 0,
+    usersThisMonth: 0,
+    revenueGrowth: 0,
+  });
+  const [recentActivity, setRecentActivity] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem('auth_token');
+        const [usersRes, projectsRes, bookingsRes, paymentsRes] = await Promise.all([
+          axios.get('http://localhost:3000/user', { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get('http://localhost:3000/project', { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get('http://localhost:3000/booking', { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get('http://localhost:3000/payment', { headers: { Authorization: `Bearer ${token}` } }),
+        ]);
+
+        const users = usersRes.data;
+        const projects = projectsRes.data;
+        const bookings = bookingsRes.data;
+        const payments = paymentsRes.data;
+
+        const now = new Date();
+        const oneMonthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+
+        const usersThisMonth = users.filter((u: any) => new Date(u.createdAt) > oneMonthAgo).length;
+        const monthlyRevenue = payments
+          .filter((p: any) => new Date(p.date) > oneMonthAgo)
+          .reduce((acc: number, p: any) => acc + p.amount, 0);
+
+        setStats({
+          totalUsers: users.length,
+          pendingApprovals: 12, // Placeholder
+          monthlyRevenue,
+          activeProjects: projects.filter((p: any) => p.status === 'IN_PROGRESS').length,
+          usersThisMonth,
+          revenueGrowth: 15, // Placeholder
+        });
+
+        setRecentActivity(bookings.slice(0, 4).map((b: any) => ({
+          action: `New booking for ${b.project.name}`,
+          time: `${Math.floor((new Date().getTime() - new Date(b.createdAt).getTime()) / (1000 * 60 * 60))} hours ago`,
+          status: 'neutral',
+        })));
+
+        setLoading(false);
+      } catch (error) {
+        console.error('Failed to fetch dashboard data:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -22,8 +85,8 @@ export default function AdminDashboard() {
               <p className="text-sm text-muted-foreground">Total Users</p>
               <Users className="w-5 h-5 text-primary" />
             </div>
-            <p className="text-3xl font-bold">28</p>
-            <p className="text-xs text-green-600">+3 this month</p>
+            <p className="text-3xl font-bold">{stats.totalUsers}</p>
+            <p className="text-xs text-green-600">+{stats.usersThisMonth} this month</p>
           </div>
         </Card>
         <Card className="p-6">
@@ -32,7 +95,7 @@ export default function AdminDashboard() {
               <p className="text-sm text-muted-foreground">Pending Approvals</p>
               <AlertCircle className="w-5 h-5 text-yellow-600" />
             </div>
-            <p className="text-3xl font-bold">12</p>
+            <p className="text-3xl font-bold">{stats.pendingApprovals}</p>
             <p className="text-xs text-yellow-600">Require action</p>
           </div>
         </Card>
@@ -42,8 +105,8 @@ export default function AdminDashboard() {
               <p className="text-sm text-muted-foreground">Revenue (Month)</p>
               <DollarSign className="w-5 h-5 text-green-600" />
             </div>
-            <p className="text-3xl font-bold">₹42.5L</p>
-            <p className="text-xs text-green-600">+15% vs last month</p>
+            <p className="text-3xl font-bold">₹{(stats.monthlyRevenue / 100000).toFixed(1)}L</p>
+            <p className="text-xs text-green-600">+{stats.revenueGrowth}% vs last month</p>
           </div>
         </Card>
         <Card className="p-6">
@@ -52,7 +115,7 @@ export default function AdminDashboard() {
               <p className="text-sm text-muted-foreground">Active Projects</p>
               <TrendingUp className="w-5 h-5 text-blue-600" />
             </div>
-            <p className="text-3xl font-bold">18</p>
+            <p className="text-3xl font-bold">{stats.activeProjects}</p>
             <p className="text-xs text-blue-600">5 completing soon</p>
           </div>
         </Card>
@@ -84,7 +147,7 @@ export default function AdminDashboard() {
             <p className="text-muted-foreground">Review and approve pending invoices, payments, and projects</p>
             <Link href="/dashboard/admin/approvals">
               <Button className="w-full bg-transparent" variant="outline">
-                View Pending (12)
+                View Pending ({stats.pendingApprovals})
               </Button>
             </Link>
           </div>
@@ -127,12 +190,7 @@ export default function AdminDashboard() {
       <Card className="p-6">
         <h2 className="text-xl font-bold mb-4">Recent Activity</h2>
         <div className="space-y-3">
-          {[
-            { action: "Invoice #INV-001 approved", time: "2 hours ago", status: "approved" },
-            { action: "New user Anita Verma added", time: "4 hours ago", status: "neutral" },
-            { action: "Payment of ₹5L received", time: "1 day ago", status: "success" },
-            { action: "Project deadline extended", time: "2 days ago", status: "neutral" },
-          ].map((item, i) => (
+          {recentActivity.map((item: any, i) => (
             <div key={i} className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
               <p className="text-sm">{item.action}</p>
               <p className="text-xs text-muted-foreground">{item.time}</p>
@@ -143,3 +201,5 @@ export default function AdminDashboard() {
     </div>
   )
 }
+
+export default withRole("admin")(AdminDashboard)

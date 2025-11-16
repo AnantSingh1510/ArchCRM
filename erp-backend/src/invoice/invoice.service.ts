@@ -8,8 +8,15 @@ export class InvoiceService {
   constructor(private prisma: PrismaService) {}
 
   create(createInvoiceDto: CreateInvoiceDto) {
+    const { clientId, ...rest } = createInvoiceDto;
     return this.prisma.invoice.create({
-      data: createInvoiceDto,
+      data: {
+        ...rest,
+        status: 'PENDING',
+        client: {
+          connect: { id: clientId },
+        },
+      },
     });
   }
 

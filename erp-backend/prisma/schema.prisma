@@ -46,6 +46,7 @@ model Project {
   properties  Property[]
   photos      String[]
   bookings    Booking[]
+  paymentPlans PaymentPlan[]
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
@@ -86,6 +87,7 @@ enum Role {
   ADMIN
   OWNER
   EMPLOYEE
+  BROKER
 }
 
 enum Status {
@@ -219,7 +221,7 @@ model Invoice {
   amount      Float
   date        DateTime
   dueDate     DateTime
-  status      String    @default("PENDING")
+  status      InvoiceStatus @default(PENDING)
   description String?
   payments    Payment[]
   createdAt   DateTime  @default(now())
@@ -300,7 +302,8 @@ model Booking {
   broker                  User?                  @relation("BrokerBookings", fields: [brokerId], references: [id])
   brokerId                String?
   bookingType             BookingType
-  paymentPlan             String // This might need to be a separate model later
+  paymentPlan             PaymentPlan @relation(fields: [paymentPlanId], references: [id])
+  paymentPlanId           String
   applicationDate         DateTime
   basicPrice              Float
   formNo                  String?
@@ -345,4 +348,24 @@ enum BookingStatus {
   PENDING
   APPROVED
   CANCELLED
+}
+
+enum InvoiceStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PAID
+}
+
+model PaymentPlan {
+  id        String    @id @default(cuid())
+  name      String
+  details   Json // Example: { downPayment: 20, installments: [{ amount: 10000, dueDate: "..." }] }
+  project   Project   @relation(fields: [projectId], references: [id])
+  projectId String
+  bookings  Booking[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("payment_plan")
 }

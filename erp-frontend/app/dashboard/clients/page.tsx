@@ -23,6 +23,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { useRouter } from "next/navigation"
+import { useAuthContext } from "@/context/auth-context"
 
 interface Client {
   id: string
@@ -41,12 +42,17 @@ export default function ClientsPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [clientToDelete, setClientToDelete] = useState<Client | null>(null)
-  const router = useRouter()
+  const router = useRouter();
+  const { token } = useAuthContext();
 
   useEffect(() => {
     const fetchClients = async () => {
       try {
-        const res = await fetch("http://localhost:3000/client")
+        const res = await fetch("http://localhost:3000/client", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
         if (res.ok) {
           const data = await res.json()
           setClients(data)

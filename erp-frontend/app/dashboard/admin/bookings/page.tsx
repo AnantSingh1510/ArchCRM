@@ -8,16 +8,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Search, Plus, Eye, Edit, Trash2, Filter } from "lucide-react";
+import { useAuthContext } from '@/context/auth-context';
 
 export default function BookingsPage() {
   const [bookings, setBookings] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const { token } = useAuthContext();
 
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/booking');
+        const response = await axios.get('http://localhost:3000/booking', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         setBookings(response.data);
         setLoading(false);
       } catch (error) {

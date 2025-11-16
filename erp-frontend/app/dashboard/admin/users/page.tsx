@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useSearchParams } from 'next/navigation'
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,6 +10,8 @@ import type { User, UserRole } from "@/lib/auth-context"
 import withRole from "@/components/withRole"
 
 function UserManagementPage() {
+  const searchParams = useSearchParams()
+  const roleFilter = searchParams.get('role')
   const [users, setUsers] = useState<User[]>([])
   const [error, setError] = useState<string | null>(null)
 
@@ -47,11 +50,13 @@ function UserManagementPage() {
     fetchUsers();
   }, []);
 
-  const filteredUsers = users.filter(
-    (u) =>
-      u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      u.email.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+  const filteredUsers = users
+    .filter((u) => !roleFilter || u.role.toUpperCase() === roleFilter)
+    .filter(
+      (u) =>
+        u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        u.email.toLowerCase().includes(searchTerm.toLowerCase()),
+    )
 
   const handleAddUser = () => {
     setEditingUser(null)

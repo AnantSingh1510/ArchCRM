@@ -32,7 +32,7 @@ export class CreateBookingDto {
 
   @IsString()
   @IsNotEmpty()
-  paymentPlan: string;
+  paymentPlanId: string;
 
   @IsDate()
   @Type(() => Date)
