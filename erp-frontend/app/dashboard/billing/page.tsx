@@ -267,7 +267,7 @@ export default function BillingPage() {
             <p className="text-xs font-medium text-green-700">Total Revenue</p>
             <TrendingUp className="w-4 h-4 text-green-600" />
           </div>
-          <p className="text-3xl font-bold text-green-900">${totalRevenue.toLocaleString()}</p>
+          <p className="text-3xl font-bold text-green-900">₹{totalRevenue.toLocaleString()}</p>
           <p className="text-xs text-green-700 mt-2">{invoices.length} invoices</p>
         </Card>
         <Card className="p-6 bg-gradient-to-br from-blue-50 to-blue-100/50 border-blue-200">
@@ -283,7 +283,7 @@ export default function BillingPage() {
             <p className="text-xs font-medium text-orange-700">Pending</p>
             <Calendar className="w-4 h-4 text-orange-600" />
           </div>
-          <p className="text-3xl font-bold text-orange-900">${pendingAmount.toLocaleString()}</p>
+          <p className="text-3xl font-bold text-orange-900">₹{pendingAmount.toLocaleString()}</p>
           <p className="text-xs text-orange-700 mt-2">{invoices.filter((i) => i.status !== "PAID").length} pending</p>
         </Card>
       </div>
@@ -311,7 +311,7 @@ export default function BillingPage() {
                   <p className="text-sm text-muted-foreground">{invoice.client.name}</p>
                 </div>
                 <div className="text-right mr-4">
-                  <p className="font-semibold">${invoice.amount.toLocaleString()}</p>
+                  <p className="font-semibold">₹{invoice.amount.toLocaleString()}</p>
                   <p className="text-xs text-muted-foreground">Due: {invoice.dueDate}</p>
                 </div>
                 <button className="p-2 hover:bg-secondary rounded-lg">
@@ -337,7 +337,7 @@ export default function BillingPage() {
                     </div>
                     <div>
                       <p className="font-medium">Amount</p>
-                      <p className="text-muted-foreground">${invoice.amount.toLocaleString()}</p>
+                      <p className="text-muted-foreground">₹{invoice.amount.toLocaleString()}</p>
                     </div>
                   </div>
 
