@@ -27,7 +27,7 @@ model User {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   salesBookings   Booking[] @relation("SalesEmployeeBookings")
-  brokerBookings  Booking[] @relation("BrokerBookings")
+  documents       Document[]
 
   @@map("user")
 }
@@ -243,20 +243,21 @@ model Approval {
 }
 
 model Document {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   name         String
   type         String
   status       String
   tags         String[]
   uploadedDate DateTime
-  uploadedBy   String
+  uploadedBy   User?     @relation(fields: [uploadedById], references: [id])
+  uploadedById String?
   expiryDate   DateTime?
   size         String
   url          String
+  client       Client    @relation(fields: [clientId], references: [id])
   clientId     String
-  client       Client   @relation(fields: [clientId], references: [id])
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   @@map("document")
 }
@@ -298,7 +299,7 @@ model Booking {
   projectId               String
   unitType                PropertyType
   customerClassification  CustomerClassification
-  broker                  User?                  @relation("BrokerBookings", fields: [brokerId], references: [id])
+  broker                  Broker?                  @relation(fields: [brokerId], references: [id])
   brokerId                String?
   bookingType             BookingType
   paymentPlan             PaymentPlan? @relation(fields: [paymentPlanId], references: [id])
@@ -321,11 +322,13 @@ model Booking {
   finance                 Json?
   nomineeDetails          Json?
   status                  BookingStatus          @default(PENDING)
+  applicantPaymentFile    ApplicantPaymentFile?
   createdAt               DateTime               @default(now())
   updatedAt               DateTime               @updatedAt
 
   @@map("booking")
 }
+
 
 enum UnitHolderType {
   INDIVIDUAL
@@ -414,8 +417,40 @@ model Broker {
   name      String
   email     String    @unique
   phone     String
+  bookings  Booking[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
   @@map("broker")
+}
+
+model ApplicantPaymentFile {
+  id                  String    @id @default(cuid())
+  booking             Booking   @relation(fields: [bookingId], references: [id])
+  bookingId           String    @unique
+  duesCost            Float
+  duesSgst            Float
+  duesCgst            Float
+  totalDues           Float
+  receivedAmount      Float
+  receivedSgst        Float
+  receivedCgst        Float
+  totalReceived       Float
+  receivedPercentage  Float
+  creditAmount        Float
+  creditSgst          Float
+  creditCgst          Float
+  totalCredit         Float
+  outstandingAmount   Float
+  outstandingSgst     Float
+  outstandingCgst     Float
+  totalOutstanding    Float
+  balanceReceivable   Float
+  interestReceived    Float
+  interestOutstanding Float
+  interestWaived      Float
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@map("applicant_payment_file")
 }

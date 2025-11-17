@@ -1,0 +1,62 @@
+-- DropForeignKey
+ALTER TABLE "booking" DROP CONSTRAINT "booking_brokerId_fkey";
+
+-- CreateTable
+CREATE TABLE "applicant_payment_file" (
+    "id" TEXT NOT NULL,
+    "bookingNo" TEXT NOT NULL,
+    "mobileNo" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "agreementDate" TIMESTAMP(3) NOT NULL,
+    "unitType" TEXT NOT NULL,
+    "tower" TEXT NOT NULL,
+    "floor" TEXT NOT NULL,
+    "unitNo" TEXT NOT NULL,
+    "plan" TEXT NOT NULL,
+    "broker" TEXT NOT NULL,
+    "mainBroker" TEXT NOT NULL,
+    "employee" TEXT NOT NULL,
+    "loan" TEXT NOT NULL,
+    "bank" TEXT NOT NULL,
+    "rank" TEXT NOT NULL,
+    "signedArea" DOUBLE PRECISION NOT NULL,
+    "carpetArea" DOUBLE PRECISION NOT NULL,
+    "builtUpArea" DOUBLE PRECISION NOT NULL,
+    "rate" DOUBLE PRECISION NOT NULL,
+    "afterDiscountRate" DOUBLE PRECISION NOT NULL,
+    "netPrice" DOUBLE PRECISION NOT NULL,
+    "discount" DOUBLE PRECISION NOT NULL,
+    "otherCost" DOUBLE PRECISION NOT NULL,
+    "globalCost" DOUBLE PRECISION NOT NULL,
+    "costSgst" DOUBLE PRECISION NOT NULL,
+    "costCgst" DOUBLE PRECISION NOT NULL,
+    "totalCost" DOUBLE PRECISION NOT NULL,
+    "duesCost" DOUBLE PRECISION NOT NULL,
+    "duesSgst" DOUBLE PRECISION NOT NULL,
+    "duesCgst" DOUBLE PRECISION NOT NULL,
+    "totalDues" DOUBLE PRECISION NOT NULL,
+    "receivedAmount" DOUBLE PRECISION NOT NULL,
+    "receivedSgst" DOUBLE PRECISION NOT NULL,
+    "receivedCgst" DOUBLE PRECISION NOT NULL,
+    "totalReceived" DOUBLE PRECISION NOT NULL,
+    "receivedPercentage" DOUBLE PRECISION NOT NULL,
+    "creditAmount" DOUBLE PRECISION NOT NULL,
+    "creditSgst" DOUBLE PRECISION NOT NULL,
+    "creditCgst" DOUBLE PRECISION NOT NULL,
+    "totalCredit" DOUBLE PRECISION NOT NULL,
+    "outstandingAmount" DOUBLE PRECISION NOT NULL,
+    "outstandingSgst" DOUBLE PRECISION NOT NULL,
+    "outstandingCgst" DOUBLE PRECISION NOT NULL,
+    "totalOutstanding" DOUBLE PRECISION NOT NULL,
+    "balanceReceivable" DOUBLE PRECISION NOT NULL,
+    "interestReceived" DOUBLE PRECISION NOT NULL,
+    "interestOutstanding" DOUBLE PRECISION NOT NULL,
+    "interestWaived" DOUBLE PRECISION NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "applicant_payment_file_pkey" PRIMARY KEY ("id")
+);
+
+-- AddForeignKey
+ALTER TABLE "booking" ADD CONSTRAINT "booking_brokerId_fkey" FOREIGN KEY ("brokerId") REFERENCES "broker"("id") ON DELETE SET NULL ON UPDATE CASCADE;
