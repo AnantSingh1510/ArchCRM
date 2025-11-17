@@ -65,9 +65,8 @@ export const rolePermissions: Record<UserRole, Permission[]> = {
 }
 
 export function hasPermission(user: User, resource: string, action: Permission["action"]): boolean {
-  if (user.role === 'admin') {
+  if (user.role === 'admin'.toUpperCase()) {
     return true;
   }
-  const rolePermissionsList = rolePermissions[user.role] || [];
-  return rolePermissionsList.some((p) => p.resource === resource && p.action === action)
+  return user.permissions.some((p) => p.resource === resource && p.action === action)
 }
