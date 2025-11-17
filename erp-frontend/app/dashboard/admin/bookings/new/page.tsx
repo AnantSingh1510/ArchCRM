@@ -17,6 +17,7 @@ export default function NewBookingPage() {
   const [users, setUsers] = useState([]);
   const [properties, setProperties] = useState([]);
   const [paymentPlans, setPaymentPlans] = useState([]);
+  const [brokers, setBrokers] = useState([]);
   const [formData, setFormData] = useState({
     // Unit Information
     unitHolderType: 'INDIVIDUAL',
@@ -96,16 +97,18 @@ export default function NewBookingPage() {
       const token = localStorage.getItem('auth_token');
       if (!token) return;
       try {
-        const [projectsRes, usersRes, propertiesRes, paymentPlansRes] = await Promise.all([
+        const [projectsRes, usersRes, propertiesRes, paymentPlansRes, brokersRes] = await Promise.all([
           axios.get('http://localhost:3000/project', { headers: { Authorization: `Bearer ${token}` } }),
           axios.get('http://localhost:3000/user', { headers: { Authorization: `Bearer ${token}` } }),
           axios.get('http://localhost:3000/property', { headers: { Authorization: `Bearer ${token}` } }),
           axios.get('http://localhost:3000/payment-plans', { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get('http://localhost:3000/broker', { headers: { Authorization: `Bearer ${token}` } }),
         ]);
         setProjects(projectsRes.data);
         setUsers(usersRes.data);
         setProperties(propertiesRes.data);
         setPaymentPlans(paymentPlansRes.data);
+        setBrokers(brokersRes.data);
       } catch (error) {
         console.error('Failed to fetch data for form:', error);
       }
@@ -153,13 +156,13 @@ export default function NewBookingPage() {
             <div className="space-y-2"><Label>Project*</Label><Select name="projectId" onValueChange={(v) => handleSelectChange('projectId', v)}><SelectTrigger><SelectValue placeholder="--Select--" /></SelectTrigger><SelectContent>{projects.map((p: any) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select></div>
             <div className="space-y-2"><Label>Unit Type*</Label><Select name="unitType" onValueChange={(v) => handleSelectChange('unitType', v)}><SelectTrigger><SelectValue placeholder="--Select--" /></SelectTrigger><SelectContent><SelectItem value="RESIDENTIAL">Residential</SelectItem><SelectItem value="COMMERCIAL">Commercial</SelectItem></SelectContent></Select></div>
             <div className="space-y-2"><Label>Customer Classification</Label><RadioGroup defaultValue="DIRECT" onValueChange={(v) => handleSelectChange('customerClassification', v)}><div className="flex items-center space-x-2"><RadioGroupItem value="BROKER" id="broker" /><Label htmlFor="broker">Broker</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="DIRECT" id="direct" /><Label htmlFor="direct">Direct</Label></div></RadioGroup></div>
-            <div className="space-y-2"><Label>Broker*</Label><Select name="brokerId" onValueChange={(v) => handleSelectChange('brokerId', v)}><SelectTrigger><SelectValue placeholder="--Select--" /></SelectTrigger><SelectContent>{users.filter((u: any) => u.role === 'BROKER').map((u: any) => <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>)}</SelectContent></Select></div>
-            <div className="space-y-2"><Label>Main Broker</Label><Select name="mainBrokerId" onValueChange={(v) => handleSelectChange('mainBrokerId', v)}><SelectTrigger><SelectValue placeholder="--Select--" /></SelectTrigger><SelectContent>{users.filter((u: any) => u.role === 'BROKER').map((u: any) => <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>)}</SelectContent></Select></div>
+            <div className="space-y-2"><Label>Broker*</Label><Select name="brokerId" onValueChange={(v) => handleSelectChange('brokerId', v)}><SelectTrigger><SelectValue placeholder="--Select--" /></SelectTrigger><SelectContent>{brokers.map((b: any) => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}</SelectContent></Select></div>
+            <div className="space-y-2"><Label>Main Broker</Label><Select name="mainBrokerId" onValueChange={(v) => handleSelectChange('mainBrokerId', v)}><SelectTrigger><SelectValue placeholder="--Select--" /></SelectTrigger><SelectContent>{brokers.map((b: any) => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}</SelectContent></Select></div>
             <div className="space-y-2 col-span-2"><Label>Booking Type</Label><RadioGroup defaultValue="NORMAL" onValueChange={(v) => handleSelectChange('bookingType', v)} className="flex space-x-4"><div className="flex items-center space-x-2"><RadioGroupItem value="NORMAL" id="normal" /><Label htmlFor="normal">Normal Booking</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="HOLD" id="hold" /><Label htmlFor="hold">Hold Unit</Label></div></RadioGroup></div>
             <div className="space-y-2"><Label>Tower</Label><Select name="tower" onValueChange={(v) => handleSelectChange('tower', v)}><SelectTrigger><SelectValue placeholder="--Select--" /></SelectTrigger><SelectContent>{[...new Set(properties.map((p: any) => p.tower))].map((tower: any) => <SelectItem key={tower} value={tower}>{tower}</SelectItem>)}</SelectContent></Select></div>
             <div className="space-y-2"><Label>Floor</Label><Select name="floor" onValueChange={(v) => handleSelectChange('floor', v)}><SelectTrigger><SelectValue placeholder="--Select--" /></SelectTrigger><SelectContent>{[...new Set(properties.map((p: any) => p.floor))].map((floor: any) => <SelectItem key={floor} value={floor}>{floor}</SelectItem>)}</SelectContent></Select></div>
             <div className="space-y-2"><Label>Unit No.</Label><Select name="unitNo" onValueChange={(v) => handleSelectChange('unitNo', v)}><SelectTrigger><SelectValue placeholder="--Select--" /></SelectTrigger><SelectContent>{properties.map((p: any) => <SelectItem key={p.id} value={p.id}>{p.unitNumber}</SelectItem>)}</SelectContent></Select></div>
-            <div className="space-y-2"><Label>Payment Plan*</Label><Select name="paymentPlan" onValueChange={(v) => handleSelectChange('paymentPlanId', v)}><SelectTrigger><SelectValue placeholder="--Select--" /></SelectTrigger><SelectContent>{paymentPlans.map((p: any) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select></div>
+            <div className="space-y-2"><Label>Payment Plan*</Label><Select name="paymentPlan" onValueChange={(v) => handleSelectChange('paymentPlanId', v)}><SelectTrigger><SelectValue placeholder="--Select--" /></SelectTrigger><SelectContent>{paymentPlans.map((p: any) => <SelectItem key={p.id} value={p.id}>{p.planName}</SelectItem>)}</SelectContent></Select></div>
             <div className="space-y-2"><Label>Application Date*</Label><Input type="date" name="applicationDate" value={formData.applicationDate} onChange={handleChange} /></div>
             <div className="space-y-2"><Label>Basic Price*</Label><Input name="basicPrice" value={formData.basicPrice} onChange={handleChange} /></div>
             <div className="space-y-2"><Label>Form No.</Label><Input name="formNo" value={formData.formNo} onChange={handleChange} /></div>

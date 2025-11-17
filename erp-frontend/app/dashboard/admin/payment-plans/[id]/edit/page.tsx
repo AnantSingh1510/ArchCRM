@@ -2,14 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 import { useAuthContext } from '@/context/auth-context';
 
 interface FormDataState {
@@ -30,23 +29,11 @@ interface FormDataState {
 const planTypes = ["Construction Plan", "Down Payment Plan", "Flexi Plan", "Time Plan", "Emi Plan"];
 const emiCycles = ["Monthly", "Quarterly", "Half-Yearly", "Annually"];
 
-export default function NewPaymentPlanPage() {
+export default function EditPaymentPlanPage() {
   const router = useRouter();
+  const { id } = useParams();
   const [projects, setProjects] = useState([]);
-  const [formData, setFormData] = useState<FormDataState>({
-    projectId: '',
-    planName: '',
-    planType: 'Construction Plan',
-    roi: 0,
-    emiCycle: 'Monthly',
-    type: '%',
-    timelyDiscount: false,
-    discountPerArea: 0,
-    discountPercentage: 0,
-    discountCalculate: 'Fix',
-    description: '',
-    attachment: null,
-  });
+  const [formData, setFormData] = useState<FormDataState | null>(null);
   const { token } = useAuthContext();
 
   useEffect(() => {
@@ -61,29 +48,45 @@ export default function NewPaymentPlanPage() {
       }
     };
     fetchProjects();
-  }, []);
+  }, [token]);
+
+  useEffect(() => {
+    if (!id) return;
+    const fetchPlan = async () => {
+      try {
+        const response = await axios.get(`http://localhost:3000/payment-plans/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setFormData({ ...response.data, attachment: null });
+      } catch (error) {
+        console.error('Failed to fetch payment plan:', error);
+      }
+    };
+    fetchPlan();
+  }, [id, token]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     const isNumber = type === 'number';
-    setFormData((prev) => ({ ...prev, [name]: isNumber ? parseFloat(value) || 0 : value }));
+    setFormData(prev => prev ? { ...prev, [name]: isNumber ? parseFloat(value) || 0 : value } : null);
   };
 
   const handleSelectChange = (name: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData(prev => prev ? { ...prev, [name]: value } : null);
   };
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setFormData(prev => ({ ...prev, attachment: file }));
+      setFormData(prev => prev ? { ...prev, attachment: file } : null);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData) return;
+
     const postData = new FormData();
-    
     const { attachment, timelyDiscount, ...otherFields } = formData;
     if (attachment) {
       postData.append('attachment', attachment);
@@ -94,8 +97,7 @@ export default function NewPaymentPlanPage() {
     }
 
     try {
-      const token = localStorage.getItem('auth_token');
-      await axios.post('http://localhost:3000/payment-plans', postData, {
+      await axios.patch(`http://localhost:3000/payment-plans/${id}`, postData, {
         headers: { 
             Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data',
@@ -103,13 +105,15 @@ export default function NewPaymentPlanPage() {
       });
       router.push('/dashboard/admin/payment-plans');
     } catch (error) {
-      console.error('Failed to create payment plan:', error);
+      console.error('Failed to update payment plan:', error);
     }
   };
 
+  if (!formData) return <p>Loading...</p>;
+
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Payment Plan Master</h1>
+      <h1 className="text-2xl font-bold mb-4">Edit Payment Plan</h1>
       <form onSubmit={handleSubmit}>
         <Card>
           <CardHeader>
@@ -121,7 +125,7 @@ export default function NewPaymentPlanPage() {
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label>Project <span className="text-red-500">*</span></Label>
-              <Select name="projectId" onValueChange={(v) => handleSelectChange('projectId', v)}>
+              <Select name="projectId" value={formData.projectId} onValueChange={(v) => handleSelectChange('projectId', v)}>
                 <SelectTrigger>
                   <SelectValue placeholder="--Select--" />
                 </SelectTrigger>
@@ -146,7 +150,7 @@ export default function NewPaymentPlanPage() {
                     key={pt} 
                     type="button"
                     variant={formData.planType === pt ? "default" : "outline"}
-                    onClick={() => setFormData(prev => ({...prev, planType: pt}))}
+                    onClick={() => setFormData(prev => prev ? {...prev, planType: pt} : null)}
                   >
                     {pt}
                   </Button>
@@ -168,7 +172,7 @@ export default function NewPaymentPlanPage() {
                         key={cycle} 
                         type="button"
                         variant={formData.emiCycle === cycle ? "default" : "outline"}
-                        onClick={() => setFormData(prev => ({...prev, emiCycle: cycle}))}
+                        onClick={() => setFormData(prev => prev ? {...prev, emiCycle: cycle} : null)}
                       >
                         {cycle}
                       </Button>
@@ -182,8 +186,8 @@ export default function NewPaymentPlanPage() {
               <div className="space-y-2">
                 <Label>Type <span className="text-red-500">*</span></Label>
                 <div className="flex gap-2">
-                  <Button type="button" variant={formData.type === '%' ? "default" : "outline"} onClick={() => setFormData(prev => ({...prev, type: '%'}))}>%</Button>
-                  <Button type="button" variant={formData.type === 'Fix' ? "default" : "outline"} onClick={() => setFormData(prev => ({...prev, type: 'Fix'}))}>Fix</Button>
+                  <Button type="button" variant={formData.type === '%' ? "default" : "outline"} onClick={() => setFormData(prev => prev ? {...prev, type: '%'} : null)}>%</Button>
+                  <Button type="button" variant={formData.type === 'Fix' ? "default" : "outline"} onClick={() => setFormData(prev => prev ? {...prev, type: 'Fix'} : null)}>Fix</Button>
                 </div>
               </div>
             )}
@@ -191,8 +195,8 @@ export default function NewPaymentPlanPage() {
             <div className="space-y-2">
               <Label>Timely Discount <span className="text-red-500">*</span></Label>
               <div className="flex gap-2">
-                <Button type="button" variant={!formData.timelyDiscount ? "default" : "outline"} onClick={() => setFormData(prev => ({...prev, timelyDiscount: false}))}>No</Button>
-                <Button type="button" variant={formData.timelyDiscount ? "default" : "outline"} onClick={() => setFormData(prev => ({...prev, timelyDiscount: true}))}>Yes</Button>
+                <Button type="button" variant={!formData.timelyDiscount ? "default" : "outline"} onClick={() => setFormData(prev => prev ? {...prev, timelyDiscount: false} : null)}>No</Button>
+                <Button type="button" variant={formData.timelyDiscount ? "default" : "outline"} onClick={() => setFormData(prev => prev ? {...prev, timelyDiscount: true} : null)}>Yes</Button>
               </div>
             </div>
 
@@ -211,8 +215,8 @@ export default function NewPaymentPlanPage() {
                     <div className="space-y-2">
                       <Label>Discount Calculate</Label>
                       <div className="flex gap-2">
-                        <Button type="button" variant={formData.discountCalculate === 'Fix' ? "default" : "outline"} onClick={() => setFormData(prev => ({...prev, discountCalculate: 'Fix'}))}>Fix</Button>
-                        <Button type="button" variant={formData.discountCalculate === 'Add Discount(%)' ? "default" : "outline"} onClick={() => setFormData(prev => ({...prev, discountCalculate: 'Add Discount(%)'}))}>Add Discount(%)</Button>
+                        <Button type="button" variant={formData.discountCalculate === 'Fix' ? "default" : "outline"} onClick={() => setFormData(prev => prev ? {...prev, discountCalculate: 'Fix'} : null)}>Fix</Button>
+                        <Button type="button" variant={formData.discountCalculate === 'Add Discount(%)' ? "default" : "outline"} onClick={() => setFormData(prev => prev ? {...prev, discountCalculate: 'Add Discount(%)'} : null)}>Add Discount(%)</Button>
                       </div>
                     </div>
                   </>

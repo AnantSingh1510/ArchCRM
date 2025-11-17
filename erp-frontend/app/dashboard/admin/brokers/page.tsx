@@ -8,11 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Users, Plus, Search, Edit, Trash2, Mail, Shield, CheckCircle, XCircle } from "lucide-react";
 import { User, UserRole } from "@/lib/auth-context";
 import withRole from "@/components/withRole";
+import AddBrokerDialog from "@/components/AddBrokerDialog";
 
 function BrokersPage() {
   const [brokers, setBrokers] = useState<User[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isAddBrokerOpen, setIsAddBrokerOpen] = useState(false);
 
   useEffect(() => {
     const fetchBrokers = async () => {
@@ -42,6 +44,10 @@ function BrokersPage() {
       (b.email && b.email.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
+  const handleBrokerAdded = (newBroker: User) => {
+    setBrokers(prev => [...prev, newBroker]);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -52,7 +58,7 @@ function BrokersPage() {
           </h1>
           <p className="text-muted-foreground">Manage broker accounts</p>
         </div>
-        <Button className="gap-2">
+        <Button className="gap-2" onClick={() => setIsAddBrokerOpen(true)}>
           <Plus className="w-4 h-4" />
           Add Broker
         </Button>
@@ -108,6 +114,11 @@ function BrokersPage() {
           </table>
         </div>
       </div>
+      <AddBrokerDialog
+        isOpen={isAddBrokerOpen}
+        onClose={() => setIsAddBrokerOpen(false)}
+        onBrokerAdded={handleBrokerAdded}
+      />
     </div>
   );
 }

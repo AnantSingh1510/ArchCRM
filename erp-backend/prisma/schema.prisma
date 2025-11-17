@@ -301,8 +301,8 @@ model Booking {
   broker                  User?                  @relation("BrokerBookings", fields: [brokerId], references: [id])
   brokerId                String?
   bookingType             BookingType
-  paymentPlan             PaymentPlan @relation(fields: [paymentPlanId], references: [id])
-  paymentPlanId           String
+  paymentPlan             PaymentPlan? @relation(fields: [paymentPlanId], references: [id])
+  paymentPlanId           String?
   applicationDate         DateTime
   basicPrice              Float
   formNo                  String?
@@ -362,15 +362,49 @@ enum ApprovalStatus {
   REJECTED
 }
 
+enum PlanType {
+  CONSTRUCTION
+  DOWN_PAYMENT
+  FLEXI
+  TIME
+  EMI
+}
+
+enum EmiCycle {
+  MONTHLY
+  QUARTERLY
+  HALF_YEARLY
+  ANNUALLY
+}
+
+enum DiscountCalculate {
+  FIX
+  ADD_DISCOUNT
+}
+
+enum PaymentType {
+  PERCENT
+  FIX
+}
+
 model PaymentPlan {
-  id        String    @id @default(cuid())
-  name      String
-  details   Json // Example: { downPayment: 20, installments: [{ amount: 10000, dueDate: "..." }] }
-  project   Project   @relation(fields: [projectId], references: [id])
-  projectId String
-  bookings  Booking[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id                  String             @id @default(cuid())
+  planName            String             @default("Default Plan")
+  planType            PlanType           @default(CONSTRUCTION)
+  roi                 Float?
+  emiCycle            EmiCycle?
+  type                PaymentType        @default(PERCENT)
+  timelyDiscount      Boolean            @default(false)
+  discountPerArea     Float?
+  discountPercentage  Float?
+  discountCalculate   DiscountCalculate?
+  description         String?
+  attachmentUrl       String?
+  project             Project            @relation(fields: [projectId], references: [id])
+  projectId           String
+  bookings            Booking[]
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
 
   @@map("payment_plan")
 }
