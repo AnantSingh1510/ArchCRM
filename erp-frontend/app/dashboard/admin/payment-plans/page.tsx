@@ -6,16 +6,17 @@ import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Edit, Trash2 } from "lucide-react";
+import { useAuthContext } from '@/context/auth-context';
 
 export default function PaymentPlansPage() {
   const [paymentPlans, setPaymentPlans] = useState([]);
   const [projects, setProjects] = useState<any>({});
   const [loading, setLoading] = useState(true);
+  const { token } = useAuthContext();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem('auth_token');
         const [plansRes, projectsRes] = await Promise.all([
           axios.get('http://localhost:3000/payment-plans', { headers: { Authorization: `Bearer ${token}` } }),
           axios.get('http://localhost:3000/project', { headers: { Authorization: `Bearer ${token}` } }),

@@ -1,4 +1,4 @@
-export type UserRole = "admin" | "employee" | "user"
+export type UserRole = "admin" | "employee" | "user" | "broker"
 
 export interface User {
   id: string
@@ -58,11 +58,16 @@ export const rolePermissions: Record<UserRole, Permission[]> = {
     { resource: "invoices", action: "read" },
     { resource: "documents", action: "read" },
   ],
+  broker: [
+    { resource: "projects", action: "read" },
+    { resource: "bookings", action: "create" },
+  ],
 }
 
 export function hasPermission(user: User, resource: string, action: Permission["action"]): boolean {
   if (user.role === 'admin') {
     return true;
   }
-  return user.permissions.some((p) => p.resource === resource && p.action === action)
+  const rolePermissionsList = rolePermissions[user.role] || [];
+  return rolePermissionsList.some((p) => p.resource === resource && p.action === action)
 }

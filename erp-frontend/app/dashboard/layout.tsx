@@ -67,7 +67,7 @@ export default function DashboardLayout({
         { icon: Home, label: "Dashboard", href: "/dashboard/admin", section: "main" },
         { icon: Users, label: "Clients", href: "/dashboard/clients", section: "main" },
         { icon: Users, label: "User Management", href: "/dashboard/admin/users", section: "admin" },
-        { icon: Users, label: "Brokers", href: "/dashboard/admin/users?role=BROKER", section: "admin" },
+        { icon: Users, label: "Brokers", href: "/dashboard/admin/brokers", section: "admin" },
         { icon: FileText, label: "Bookings", href: "/dashboard/admin/bookings", section: "admin" },
         { icon: DollarSign, label: "Payment Plans", href: "/dashboard/admin/payment-plans", section: "admin" },
         { icon: Building2, label: "Projects", href: "/dashboard/projects", section: "main" },
@@ -89,6 +89,8 @@ export default function DashboardLayout({
         { icon: MessageSquare, label: "Communication", href: "/dashboard/communication", section: "team" },
         { icon: BarChart3, label: "Billing", href: "/dashboard/billing", section: "main" },
         { icon: FileText, label: "Documents", href: "/dashboard/documents", section: "main" },
+      ],
+      broker: [ // TODO: Add broker-specific navigation items in future
       ],
       user: [
         { icon: Home, label: "Dashboard", href: "/dashboard/user-client", section: "main" },

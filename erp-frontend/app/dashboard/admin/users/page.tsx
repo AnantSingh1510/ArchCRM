@@ -10,8 +10,6 @@ import type { User, UserRole } from "@/lib/auth-context"
 import withRole from "@/components/withRole"
 
 function UserManagementPage() {
-  const searchParams = useSearchParams()
-  const roleFilter = searchParams.get('role')
   const [users, setUsers] = useState<User[]>([])
   const [error, setError] = useState<string | null>(null)
 
@@ -51,7 +49,6 @@ function UserManagementPage() {
   }, []);
 
   const filteredUsers = users
-    .filter((u) => !roleFilter || u.role.toUpperCase() === roleFilter)
     .filter(
       (u) =>
         u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -171,6 +168,7 @@ function UserManagementPage() {
       admin: "bg-red-100 text-red-800",
       employee: "bg-green-100 text-green-800",
       user: "bg-gray-100 text-gray-800",
+      broker: "bg-blue-100 text-blue-800",
     }
     return colors[role]
   }

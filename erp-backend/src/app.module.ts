@@ -17,9 +17,10 @@ import { CommunicationModule } from './communication/communication.module';
 import { PaymentModule } from './payment/payment.module';
 import { BookingModule } from './booking/booking.module';
 import { PaymentPlanModule } from './payment-plan/payment-plan.module';
+import { BrokerModule } from './broker/broker.module';
 
 @Module({
-  imports: [UserModule, ProjectModule, PhaseModule, TaskModule, PrismaModule, AuthModule, ClientModule, InvoiceModule, ApprovalModule, AnalyticsModule, DocumentModule, PropertyModule, CommunicationModule, PaymentModule, BookingModule, PaymentPlanModule],
+  imports: [UserModule, ProjectModule, PhaseModule, TaskModule, PrismaModule, AuthModule, ClientModule, InvoiceModule, ApprovalModule, AnalyticsModule, DocumentModule, PropertyModule, CommunicationModule, PaymentModule, BookingModule, PaymentPlanModule, BrokerModule],
   controllers: [AppController],
   providers: [AppService],
 })
