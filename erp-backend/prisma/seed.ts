@@ -65,7 +65,6 @@ async function main() {
     create: {
       id: 'clerk_property_1',
       project: { connect: { id: project.id } },
-      client: { connect: { id: client.id } },
       tower: 'A',
       floor: '10',
       unitNumber: '101',

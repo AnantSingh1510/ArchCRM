@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useAuthContext } from '@/context/auth-context';
 
 export default function NewBookingPage() {
   const router = useRouter();
@@ -18,6 +19,7 @@ export default function NewBookingPage() {
   const [properties, setProperties] = useState([]);
   const [paymentPlans, setPaymentPlans] = useState([]);
   const [brokers, setBrokers] = useState([]);
+  const { token } = useAuthContext();
   const [formData, setFormData] = useState({
     // Unit Information
     unitHolderType: 'INDIVIDUAL',
@@ -94,7 +96,6 @@ export default function NewBookingPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const token = localStorage.getItem('auth_token');
       if (!token) return;
       try {
         const [projectsRes, usersRes, propertiesRes, paymentPlansRes, brokersRes] = await Promise.all([
@@ -130,11 +131,39 @@ export default function NewBookingPage() {
     e.preventDefault();
     console.log('Form Data:', formData);
     try {
-      await axios.post('http://localhost:3000/booking', { 
+      const postData = {
         ...formData,
         basicPrice: parseFloat(formData.basicPrice) || 0,
         applicationDate: new Date(formData.applicationDate),
-       });
+        clientId: 'ckz9f0g7p0001rj1y4c7r2u6p', // Replace with actual client ID
+        propertyId: 'cmhwiavsr0000zot86g89d0xj', // Assuming unitNo is the propertyId
+        presentAddress: {
+          address: formData.presentAddress,
+          pinCode: formData.presentPinCode,
+          country: formData.presentCountry,
+          state: formData.presentState,
+          city: formData.presentCity,
+        },
+        officeAddress: formData.fillOfficeAddress ? {
+          address: formData.officeAddress,
+          pinCode: formData.officePinCode,
+          country: formData.officeCountry,
+          state: formData.officeState,
+          city: formData.officeCity,
+        } : null,
+        permanentAddress: formData.fillPermanentAddress ? {
+          address: formData.permanentAddress,
+          pinCode: formData.permanentPinCode,
+          country: formData.permanentCountry,
+          state: formData.permanentState,
+          city: formData.permanentCity,
+        } : null,
+      };
+      await axios.post('http://localhost:3000/booking', postData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       alert('Booking Submitted! See console for data.');
       router.push('/dashboard/admin/bookings');
     } catch (error) {

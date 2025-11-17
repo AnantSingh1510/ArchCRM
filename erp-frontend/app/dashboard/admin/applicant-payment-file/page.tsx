@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import Breadcrumb from "@/components/Breadcrumb";
 
 const Index = () => {
   const [data, setData] = useState([]);
@@ -33,24 +34,45 @@ const Index = () => {
     filterType: 'totalSaleValue',
   });
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = localStorage.getItem("auth_token");
-        const res = await axios.get("http://localhost:3000/reports/applicant-payment-file", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (res.status === 200) {
-          setData(res.data);
-        }
-      } catch (error) {
-        console.error("An unexpected error occurred. Please try again.");
-      }
-    };
+  const [projects, setProjects] = useState([]);
+  const [brokers, setBrokers] = useState([]);
+  const [employees, setEmployees] = useState([]);
 
-    fetchData();
+  const fetchData = async () => {
+    try {
+      const token = localStorage.getItem("auth_token");
+      const res = await axios.get("http://localhost:3000/reports/applicant-payment-file", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: filters,
+      });
+      if (res.status === 200) {
+        setData(res.data);
+      }
+    } catch (error) {
+      console.error("An unexpected error occurred. Please try again.");
+    }
+  };
+
+  const fetchFilterData = async () => {
+    try {
+      const token = localStorage.getItem("auth_token");
+      const [projectsRes, brokersRes, employeesRes] = await Promise.all([
+        axios.get("http://localhost:3000/project", { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get("http://localhost:3000/broker", { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get("http://localhost:3000/user", { headers: { Authorization: `Bearer ${token}` } }),
+      ]);
+      setProjects(projectsRes.data);
+      setBrokers(brokersRes.data);
+      setEmployees(employeesRes.data.filter((user: any) => user.role === 'EMPLOYEE'));
+    } catch (error) {
+      console.error("Failed to fetch filter data.", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchFilterData();
   }, []);
 
   const handleFilterChange = (name: string, value: string) => {
@@ -71,7 +93,14 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto p-4 sm:p-6 lg:p-8">
-        <h1 className="text-3xl font-bold mb-6 text-foreground">Applicant Payment File</h1>
+        <Breadcrumb
+          items={[
+            { label: "Inventory", href: "/dashboard/admin/inventory" },
+            { label: "Applicant Details", href: "/dashboard/admin/applicant-details" },
+            { label: "Applicant Payment File" },
+          ]}
+        />
+        <h1 className="text-3xl font-bold my-6 text-foreground">Applicant Payment File</h1>
         
         <Card className="mb-6">
           <CardHeader>
@@ -80,7 +109,11 @@ const Index = () => {
           <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             <Select onValueChange={(v) => handleFilterChange('project', v)}>
               <SelectTrigger><SelectValue placeholder="Project" /></SelectTrigger>
-              <SelectContent></SelectContent>
+              <SelectContent>
+                {projects.map((project: any) => (
+                  <SelectItem key={project.id} value={project.id}>{project.name}</SelectItem>
+                ))}
+              </SelectContent>
             </Select>
             <Select onValueChange={(v) => handleFilterChange('groupName', v)}>
               <SelectTrigger><SelectValue placeholder="Group Name" /></SelectTrigger>
@@ -96,7 +129,11 @@ const Index = () => {
             </Select>
             <Select onValueChange={(v) => handleFilterChange('broker', v)}>
               <SelectTrigger><SelectValue placeholder="Broker" /></SelectTrigger>
-              <SelectContent></SelectContent>
+              <SelectContent>
+                {brokers.map((broker: any) => (
+                  <SelectItem key={broker.id} value={broker.id}>{broker.name}</SelectItem>
+                ))}
+              </SelectContent>
             </Select>
             <Select onValueChange={(v) => handleFilterChange('tower', v)}>
               <SelectTrigger><SelectValue placeholder="Tower" /></SelectTrigger>
@@ -112,7 +149,11 @@ const Index = () => {
             </Select>
             <Select onValueChange={(v) => handleFilterChange('employee', v)}>
               <SelectTrigger><SelectValue placeholder="Employee" /></SelectTrigger>
-              <SelectContent></SelectContent>
+              <SelectContent>
+                {employees.map((employee: any) => (
+                  <SelectItem key={employee.id} value={employee.id}>{employee.name}</SelectItem>
+                ))}
+              </SelectContent>
             </Select>
             <Select onValueChange={(v) => handleFilterChange('type', v)}>
               <SelectTrigger><SelectValue placeholder="Type" /></SelectTrigger>
@@ -138,7 +179,7 @@ const Index = () => {
               </SelectContent>
             </Select>
             <Input type="date" placeholder="Deal As On Date" onChange={(e) => handleFilterChange('dealAsOnDate', e.target.value)} />
-            <Button className="md:col-span-2 lg:col-span-1">Fetch</Button>
+            <Button className="md:col-span-2 lg:col-span-1" onClick={fetchData}>Fetch</Button>
           </CardContent>
         </Card>
 

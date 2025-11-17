@@ -40,25 +40,42 @@ interface Document {
 }
 
 interface ClientDetail {
-  id: string
-  name: string
-  email: string
-  phone: string
-  alternatePhone: string
-  address: string
-  city: string
-  state: string
-  pinCode: string
-  gstNumber: string
-  panNumber: string
-  aadhaarNumber: string
-  bankAccountNumber: string
-  ifscCode: string
-  joinedDate: string
-  status: "active" | "inactive" | "suspended"
-  kycStatus: "approved" | "pending" | "incomplete" | "rejected"
-  documents: Document[]
-  properties: Property[]
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  alternatePhone?: string;
+  joinedDate?: string;
+  title?: string;
+  firstName?: string;
+  middleName?: string;
+  lastName?: string;
+  relationName?: string;
+  dob?: string;
+  anniversaryDate?: string;
+  nationality?: string;
+  maritalStatus?: string;
+  gender?: string;
+  children?: number;
+  passportNo?: string;
+  panNumber?: string;
+  aadhaarNumber?: string;
+  profession?: string;
+  designation?: string;
+  company?: string;
+  bankAccountNumber?: string;
+  ifscCode?: string;
+  bankName?: string;
+  bankBranch?: string;
+  presentAddress?: any;
+  officeAddress?: any;
+  permanentAddress?: any;
+  mailingAddress?: string;
+  communicationPreference?: string;
+  status: "active" | "inactive" | "suspended";
+  kycStatus: "approved" | "pending" | "incomplete" | "rejected";
+  documents: Document[];
+  bookings: any[];
 }
 
 interface Property {
@@ -240,7 +257,7 @@ export default function ClientDetailsPage({ params }: { params: Promise<{ id: st
             <label className="text-sm font-semibold text-slate-600">Joined Date</label>
             <div className="flex items-center gap-2 mt-2">
               <Calendar className="w-4 h-4 text-slate-400" />
-              <p className="text-slate-900">{new Date(client.joinedDate).toLocaleDateString("en-IN")}</p>
+              <p className="text-slate-900">{client.joinedDate ? new Date(client.joinedDate).toLocaleDateString("en-IN") : '-'}</p>
             </div>
           </div>
         </div>
@@ -254,20 +271,28 @@ export default function ClientDetailsPage({ params }: { params: Promise<{ id: st
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="text-sm font-semibold text-slate-600">Address</label>
-            <p className="text-slate-900 mt-2">{client.address}</p>
+            <label className="text-sm font-semibold text-slate-600">Present Address</label>
+            <p className="text-slate-900 mt-2">{client.presentAddress?.address}</p>
           </div>
           <div>
             <label className="text-sm font-semibold text-slate-600">City</label>
-            <p className="text-slate-900 mt-2">{client.city}</p>
+            <p className="text-slate-900 mt-2">{client.presentAddress?.city}</p>
           </div>
           <div>
             <label className="text-sm font-semibold text-slate-600">State</label>
-            <p className="text-slate-900 mt-2">{client.state}</p>
+            <p className="text-slate-900 mt-2">{client.presentAddress?.state}</p>
           </div>
           <div>
             <label className="text-sm font-semibold text-slate-600">PIN Code</label>
-            <p className="text-slate-900 mt-2">{client.pinCode}</p>
+            <p className="text-slate-900 mt-2">{client.presentAddress?.pinCode}</p>
+          </div>
+          <div>
+            <label className="text-sm font-semibold text-slate-600">Mailing Address</label>
+            <p className="text-slate-900 mt-2">{client.mailingAddress}</p>
+          </div>
+          <div>
+            <label className="text-sm font-semibold text-slate-600">Communication Preference</label>
+            <p className="text-slate-900 mt-2">{client.communicationPreference}</p>
           </div>
         </div>
       </Card>
@@ -280,15 +305,11 @@ export default function ClientDetailsPage({ params }: { params: Promise<{ id: st
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="text-sm font-semibold text-slate-600">GST Number</label>
-            <p className="text-slate-900 mt-2 font-mono">{client.gstNumber}</p>
-          </div>
-          <div>
             <label className="text-sm font-semibold text-slate-600">PAN Number</label>
             <p className="text-slate-900 mt-2 font-mono">{client.panNumber}</p>
           </div>
           <div>
-            <label className="text-sm font-semibold text-slate-600">Aadhaar Number (Last 4 Digits)</label>
+            <label className="text-sm font-semibold text-slate-600">Aadhaar Number</label>
             <p className="text-slate-900 mt-2 font-mono">{client.aadhaarNumber}</p>
           </div>
           <div>
@@ -298,6 +319,14 @@ export default function ClientDetailsPage({ params }: { params: Promise<{ id: st
           <div>
             <label className="text-sm font-semibold text-slate-600">IFSC Code</label>
             <p className="text-slate-900 mt-2 font-mono">{client.ifscCode}</p>
+          </div>
+          <div>
+            <label className="text-sm font-semibold text-slate-600">Bank Name</label>
+            <p className="text-slate-900 mt-2">{client.bankName}</p>
+          </div>
+          <div>
+            <label className="text-sm font-semibold text-slate-600">Bank Branch</label>
+            <p className="text-slate-900 mt-2">{client.bankBranch}</p>
           </div>
         </div>
       </Card>
@@ -373,55 +402,6 @@ export default function ClientDetailsPage({ params }: { params: Promise<{ id: st
             <FileText className="w-12 h-12 text-slate-300 mx-auto mb-3" />
             <p className="text-slate-500 font-medium">No documents uploaded yet</p>
             <p className="text-sm text-slate-400 mt-1">Start by uploading KYC documents</p>
-          </div>
-        )}
-      </Card>
-
-      {/* Properties Section */}
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold flex items-center gap-2">
-            <Home className="w-5 h-5 text-blue-600" />
-            Properties
-          </h2>
-          <Link href={`/dashboard/clients/${id}/properties/new`}>
-            <Button className="gap-2">
-              <Plus className="w-4 h-4" />
-              Add Property
-            </Button>
-          </Link>
-        </div>
-
-        <div className="space-y-3">
-          {client.properties.map((prop) => (
-            <div
-              key={prop.id}
-              className="flex items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors border border-slate-200"
-            >
-              <div className="flex items-start gap-3 flex-1">
-                <Home className="w-5 h-5 text-slate-400 mt-1 flex-shrink-0" />
-                <div className="flex-1">
-                  <h3 className="font-semibold text-slate-900">Plot No. {prop.plotNumber}</h3>
-                  <p className="text-sm text-slate-500">{prop.dimensions}</p>
-                  <p className="text-xs text-slate-500 mt-2">{prop.project.name}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <button className="p-2 hover:bg-slate-200 rounded-lg transition-colors">
-                  <Eye className="w-4 h-4 text-slate-600" />
-                </button>
-                <button className="p-2 hover:bg-red-50 rounded-lg transition-colors">
-                  <Trash2 className="w-4 h-4 text-red-600" />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {client.properties.length === 0 && (
-          <div className="text-center py-8">
-            <Home className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-            <p className="text-slate-500 font-medium">No properties assigned yet</p>
           </div>
         )}
       </Card>

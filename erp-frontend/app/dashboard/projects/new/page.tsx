@@ -14,6 +14,10 @@ export default function NewProjectPage() {
   const [formData, setFormData] = useState({
     name: "",
     location: "",
+    groupName: "",
+    unitType: "",
+    tower: "",
+    floor: "",
     clientIds: [] as string[],
   })
   const [files, setFiles] = useState<File[]>([])
@@ -60,6 +64,10 @@ export default function NewProjectPage() {
     const projectData = new FormData()
     projectData.append("name", formData.name)
     projectData.append("location", formData.location)
+    projectData.append("groupName", formData.groupName)
+    projectData.append("unitType", formData.unitType)
+    projectData.append("tower", formData.tower)
+    projectData.append("floor", formData.floor)
     formData.clientIds.forEach((id) => projectData.append("clientIds[]", id))
     files.forEach((file) => projectData.append("photos", file))
 
@@ -128,6 +136,46 @@ export default function NewProjectPage() {
                 value={formData.location}
                 onChange={handleChange}
                 required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="groupName">Group Name</Label>
+              <Input
+                id="groupName"
+                type="text"
+                name="groupName"
+                value={formData.groupName}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="unitType">Unit Type</Label>
+              <Input
+                id="unitType"
+                type="text"
+                name="unitType"
+                value={formData.unitType}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="tower">Tower</Label>
+              <Input
+                id="tower"
+                type="text"
+                name="tower"
+                value={formData.tower}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="floor">Floor</Label>
+              <Input
+                id="floor"
+                type="text"
+                name="floor"
+                value={formData.floor}
+                onChange={handleChange}
               />
             </div>
           </div>

@@ -37,6 +37,10 @@ model Project {
   name        String
   clients     ClientsOnProjects[]
   location    String
+  groupName   String?
+  unitType    String?
+  tower       String?
+  floor       String?
   startDate   DateTime?
   endDate     DateTime?
   status      ProjectStatus @default(PLANNING)
@@ -157,7 +161,6 @@ model Client {
   invoices            Invoice[]
   documents           Document[]
   user                User?
-  properties          Property[]
   communications      Communication[]
   payments            Payment[]
   bookings            Booking[]
@@ -182,8 +185,6 @@ model Property {
   status      PropertyStatus @default(AVAILABLE)
   project     Project        @relation(fields: [projectId], references: [id])
   projectId   String
-  client      Client         @relation(fields: [clientId], references: [id])
-  clientId    String
   bookings    Booking[]
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt

@@ -25,10 +25,9 @@ export class ClientService {
   }
 
   update(id: string, updateClientDto: UpdateClientDto) {
-    const { properties, ...data } = updateClientDto;
     return this.prisma.client.update({
       where: { id },
-      data,
+      data: updateClientDto,
     });
   }
 
@@ -36,11 +35,6 @@ export class ClientService {
     return this.prisma.client.findMany({
       include: {
         projects: true,
-        properties: {
-          include: {
-            project: true,
-          },
-        },
       },
     });
   }
@@ -51,11 +45,6 @@ export class ClientService {
       include: {
         projects: true,
         documents: true,
-        properties: {
-          include: {
-            project: true,
-          },
-        },
       },
     });
   }
@@ -69,11 +58,6 @@ export class ClientService {
       where: { id },
       include: {
         projects: {
-          include: {
-            project: true,
-          },
-        },
-        properties: {
           include: {
             project: true,
           },

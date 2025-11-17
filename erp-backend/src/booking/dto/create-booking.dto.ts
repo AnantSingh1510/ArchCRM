@@ -66,8 +66,8 @@ export class CreateBookingDto {
   brokerDiscount?: DiscountDto;
 
   @IsString()
-  @IsNotEmpty()
-  clientId: string;
+  @IsOptional()
+  clientId?: string;
 
   @IsOptional()
   @ValidateNested()
@@ -89,13 +89,6 @@ export class CreateBookingDto {
   @Type(() => AddressDto)
   permanentAddress?: AddressDto;
 
-  @IsString()
-  @IsOptional()
-  mailingAddress?: string;
-
-  @IsString()
-  @IsOptional()
-  communicationPreference?: string;
 
   @IsString()
   @IsNotEmpty()

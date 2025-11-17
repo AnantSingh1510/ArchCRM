@@ -11,15 +11,12 @@ export class PropertyService {
   ) {}
 
   create(createPropertyDto: CreatePropertyDto) {
-    const { clientId, projectId, ...rest } = createPropertyDto;
+    const { projectId, ...rest } = createPropertyDto;
     return this.prisma.property.create({
       data: {
         ...rest,
         project: {
           connect: { id: projectId },
-        },
-        client: {
-          connect: { id: clientId },
         },
       },
     });
@@ -47,12 +44,18 @@ export class PropertyService {
       return [];
     }
 
-    return this.prisma.property.findMany({
+    const bookings = await this.prisma.booking.findMany({
       where: { clientId: client.id },
       include: {
-        project: true,
+        property: {
+          include: {
+            project: true,
+          },
+        },
       },
     });
+
+    return bookings.map((booking) => booking.property);
   }
 
   findOne(id: string) {

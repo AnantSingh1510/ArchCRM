@@ -72,6 +72,7 @@ export default function DashboardLayout({
         { icon: DollarSign, label: "Payment Plans", href: "/dashboard/admin/payment-plans", section: "admin" },
         { icon: Building2, label: "Projects", href: "/dashboard/projects", section: "main" },
         { icon: FileCheck, label: "Approvals", href: "/dashboard/admin/approvals", section: "admin" },
+        { icon: Home, label: "Inventory", href: "/dashboard/admin/inventory", section: "admin" },
         { icon: BarChart3, label: "Analytics", href: "/dashboard/admin/analytics", section: "analytics" },
         { icon: CreditCard, label: "Financial", href: "/dashboard/financials/invoices", section: "financial" },
         { icon: FileText, label: "Reports", href: "/dashboard/reports", section: "analytics" },

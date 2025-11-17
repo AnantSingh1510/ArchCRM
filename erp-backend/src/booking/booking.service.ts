@@ -10,7 +10,10 @@ export class BookingService {
 
   async create(createBookingDto: CreateBookingDto) {
     const {
-      applicantDetails,
+      applicantFirstName,
+      applicantLastName,
+      applicantEmail1,
+      applicantPanNo,
       presentAddress,
       officeAddress,
       permanentAddress,
@@ -22,27 +25,33 @@ export class BookingService {
       paymentPlanId,
       companyDiscount,
       brokerDiscount,
+      mailingAddress,
+      communicationPreference,
       ...bookingData
-    } = createBookingDto;
+    } = createBookingDto as any;
 
-    // If applicant details are provided, update the client
-    if (applicantDetails) {
-      const clientUpdateData: Prisma.ClientUpdateInput = {
-        ...applicantDetails,
-      };
-      if (presentAddress) clientUpdateData.presentAddress = JSON.parse(JSON.stringify(presentAddress));
-      if (officeAddress) clientUpdateData.officeAddress = JSON.parse(JSON.stringify(officeAddress));
-      if (permanentAddress) clientUpdateData.permanentAddress = JSON.parse(JSON.stringify(permanentAddress));
+    let finalClientId = clientId;
 
-      await this.prisma.client.update({
-        where: { id: clientId },
-        data: clientUpdateData,
+    if (!clientId) {
+      const newClient = await this.prisma.client.create({
+        data: {
+          name: `${applicantFirstName} ${applicantLastName}`,
+          email: applicantEmail1,
+          phone: '', // Add a placeholder or get from DTO
+          panNumber: applicantPanNo,
+          presentAddress: presentAddress ? JSON.parse(JSON.stringify(presentAddress)) : undefined,
+          officeAddress: officeAddress ? JSON.parse(JSON.stringify(officeAddress)) : undefined,
+          permanentAddress: permanentAddress ? JSON.parse(JSON.stringify(permanentAddress)) : undefined,
+          mailingAddress: (createBookingDto as any).mailingAddress,
+          communicationPreference: (createBookingDto as any).communicationPreference,
+        },
       });
+      finalClientId = newClient.id;
     }
 
     const bookingCreateData: Prisma.BookingCreateInput = {
       ...bookingData,
-      client: { connect: { id: clientId } },
+      client: { connect: { id: finalClientId } },
       project: { connect: { id: projectId } },
       property: { connect: { id: propertyId } },
       salesEmployee: { connect: { id: salesEmployeeId } },

@@ -4,7 +4,7 @@ export class CreateDocumentDto {
   status: string;
   tags: string[];
   uploadedDate: Date;
-  uploadedBy: string;
+  uploadedById: string;
   expiryDate?: Date;
   size: string;
   clientId: string;

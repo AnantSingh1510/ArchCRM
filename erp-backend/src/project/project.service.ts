@@ -8,10 +8,16 @@ export class ProjectService {
   constructor(private prisma: PrismaService) {}
 
   create(createProjectDto: CreateProjectDto) {
-    const { clientIds, ...rest } = createProjectDto;
+    const { clientIds, ...projectData } = createProjectDto;
     return this.prisma.project.create({
       data: {
-        ...rest,
+        name: projectData.name,
+        location: projectData.location,
+        groupName: projectData.groupName,
+        unitType: projectData.unitType,
+        tower: projectData.tower,
+        floor: projectData.floor,
+        photos: projectData.photos,
         ...(clientIds && {
           clients: {
             create: clientIds.map((clientId) => ({

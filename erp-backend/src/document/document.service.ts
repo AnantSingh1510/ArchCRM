@@ -8,7 +8,7 @@ export class DocumentService {
   constructor(private prisma: PrismaService) {}
 
   create(createDocumentDto: CreateDocumentDto) {
-    const { clientId, tags, ...rest } = createDocumentDto;
+    const { clientId, tags, uploadedById, ...rest } = createDocumentDto;
     return this.prisma.document.create({
       data: {
         ...rest,
@@ -17,6 +17,9 @@ export class DocumentService {
         },
         client: {
           connect: { id: clientId },
+        },
+        uploadedBy: {
+          connect: { id: uploadedById },
         },
       },
     });
