@@ -195,7 +195,7 @@ function AdminDashboard() {
               <h2 className="text-xl font-bold">System Settings</h2>
             </div>
             <p className="text-muted-foreground">Configure system-wide settings and integrations</p>
-            <Link href="/dashboard/admin/settings">
+            <Link href="/dashboard/settings">
               <Button className="w-full bg-transparent" variant="outline">
                 Settings
               </Button>
